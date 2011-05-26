@@ -8,11 +8,11 @@ html
     title Slimish-Jinja Example
     meta name="keywords" content="template language"
 
-  body#main.main
-    h1.class1.class2#punch Markup examples
+  body#home.liquid
+    h1.punch Markup examples
 
-    #contents.example1
-      | This content would come directly under div#content.
+    #contents.main
+      | This content would come directly under #contents.main.
         It can span multiple lines.
       p Text can have dynamic =content .
     ul
