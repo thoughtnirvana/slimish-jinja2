@@ -1,1 +1,1 @@
-[Slim][http://slim-lang.com/] templates format for Jinja2. 
+[Slim](http://slim-lang.com/) templates syntax for Jinja2. 
