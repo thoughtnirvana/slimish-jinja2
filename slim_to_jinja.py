@@ -1,25 +1,5 @@
 import re, sys
 
-template = '''
-html
-  head
-    title Slimish-Jinja Example
-    meta name="keywords" content="template language"
-
-  body#main.main
-    h1.class1.class2#punch Markup examples
-
-    #contents.example1
-      | This content would come directly under div#content.
-        It can span multiple lines.
-      p Text can have dynamic =content .
-    ul
-      -for user in users
-        li Found a =user
-      -else
-        li No users
-'''
-
 # Token types.
 DE_INDENT = intern('de_indent')
 INDENT = intern('indent')
@@ -158,6 +138,9 @@ class Lexer(object):
 
 
 class Translator(object):
+    """
+    Translates slim syntax to jinja2 syntax.
+    """
     def __init__(self, lexer, debug=False, jinja_env=None):
         self.__dict__.update(lexer=lexer, debug=debug,
                              indent='', indents=[],
