@@ -1,11 +1,5 @@
 import re, sys
 
-no_content_html_tags = set(map(intern,
-                               ['br', 'img', 'link', 'hr', 'meta', 'input']))
-no_content_jinja_tags = set(map(intern,
-                                ['include', 'extends', 'import', 'set',
-                                 'from', 'do', 'break', 'continue',
-                                ]))
 
 env = {'block_start_string': '{%', 'block_end_string': '%}',
        'variable_start_string': '{{', 'variable_end_string': '}}'}
@@ -25,6 +19,9 @@ class HtmlToken(Token):
     """
     HTML token.
     """
+    no_content_html_tags = set(map(intern,
+                                   ['br', 'img', 'link', 'hr', 'meta', 'input']))
+
     def __init__(self, token_type, lineno, tag_name,
                  attribs=None, contents=None):
         self.__dict__.update(token_type=token_type, lineno=lineno)
@@ -36,7 +33,7 @@ class HtmlToken(Token):
         else:
             self.attribs = ''
         if contents:
-            self.contents = parse_text_contents(contents)
+            self.contents = parse_text_contents(contents[1:])
 
     def __str__(self):
         token_type = self.token_type
@@ -56,12 +53,12 @@ DE_INDENT = intern('de_indent')
 INDENT = intern('indent')
 
 class IndentToken(Token):
-    def __init__(self, token_type, lineno, indent_len):
+    def __init__(self, token_type, lineno, spacer):
         self.__dict__.update(token_type=token_type, lineno=lineno,
-                            indent_len=indent_len)
+                            spacer=spacer)
 
     def __str__(self):
-        return ' ' * indent_len
+        return self.spacer
 
 
 TEXT = intern('text')
@@ -75,14 +72,31 @@ class TextToken(Token):
         return self.text
 
 
-JINJA_TAG = intern('jinja_tag')
+JINJA_OPEN_TAG = intern('jinja_tag')
+JINJA_CLOSE_TAG = intern('jinja_close_tag')
+JINJA_NC_TAG = intern('jinja_nc_tag')
 
 class JinjaToken(Token):
+    no_content_jinja_tags = set(map(intern,
+                                    ['include', 'extends', 'import', 'set',
+                                     'from', 'do', 'break', 'continue',
+                                    ]))
+    tag_pairs = {'for': 'else', 'if': 'elif'}
+
     def __init__(self, token_type, lineno, tag_name, full_line):
         self.__dict__.update(token_type=token_type, lineno=lineno,
-                             tag_name=tag_name, full_line=full_line)
+                             tag_name=tag_name.strip(), full_line=full_line)
+
+    def closes(self, other):
+        """
+        Checks if this tag includes the `other` tag.
+        """
+        return self.tag_pairs[self.tag_name] == other.tag_name.strip()
 
     def __str__(self):
+        if self.token_type == JINJA_CLOSE_TAG:
+            return '%s %s %s' % (env['block_start_string'], 'end%s' % self.tag_name,
+                                env['block_end_string'])
         return '%s %s %s' % (env['block_start_string'], self.full_line,
                              env['block_end_string'])
 
@@ -189,7 +203,7 @@ class Lexer(object):
         attrs, contents = self.extract_values(tag_name, line)
         if contents:
             return HtmlToken(HTML_TAG, self.lineno, tag_name, attrs, contents)
-        elif tag_name in no_content_html_tags:
+        elif tag_name in HtmlToken.no_content_html_tags:
             return HtmlToken(HTML_NC_TAG, self.lineno, tag_name, attrs)
         else:
             return HtmlToken(HTML_TAG_OPEN, self.lineno, tag_name, attrs)
@@ -199,7 +213,9 @@ class Lexer(object):
         Handles jinja tags.
         """
         tag_name = intern(self.whitespace.split(line)[0][1:])
-        return JinjaToken(JINJA_TAG, self.lineno, tag_name, line[1:])
+        if tag_name in JinjaToken.no_content_jinja_tags:
+            return JinjaToken(JINJA_NC_TAG, self.lineno, tag_name, line[1:])
+        return JinjaToken(JINJA_OPEN_TAG, self.lineno, tag_name, line[1:])
 
     def handle_text(self, line):
         """
@@ -223,35 +239,58 @@ class Translator(object):
     """
     def __init__(self, lexer, debug=False):
         self.__dict__.update(lexer=lexer, debug=debug,
-                             indent='', indents=[],
-                             tokens=[])
+                             indents=[],
+                             end_tokens=[])
 
     def __call__(self):
         """
-        Returns translated lexon.
+        Returns translated `Token`.
         """
         format_output = self.format_output
+        end_tokens = self.end_tokens
+        indents = self.indents
+        delay_jinja_end_tag = False
+
         for token in self.lexer():
-            # `lexon` is a `(token_type, val)` format tuple.
-            # `val` depends on the type.
             token_type = token.token_type
-            ret = None
-            if token_type in  (HTML_NC_TAG, HTML_TAG, HTML_TAG_OPEN):
-                yield format_output(token)
-            elif token_type == JINJA_OUTPUT_TAG:
-                yield format_output(token)
-            elif token_type == JINJA_TAG:
-                yield format_output(token)
-            elif token_type == INDENT:
-                self.indent = token.indent_len
-            elif token_type == DE_INDENT:
-                self.indent = token.indent_len
-            elif token_type == TEXT:
-                yield format_output(token)
+            if token_type == HTML_TAG_OPEN:
+                # Record the tag name. The end tag is yielded on de-indent.
+                end_tokens.append(HtmlToken(HTML_TAG_CLOSE, lineno=-1, tag_name=token.tag_name))
+            elif token_type == JINJA_OPEN_TAG:
+                last_token = end_tokens[-1]
+                if token.tag_name in JinjaToken.tag_pairs:
+                    delay_jinja_end_tag = True
+                    end_tokens.append(JinjaToken(JINJA_CLOSE_TAG,
+                                                 lineno=-1, tag_name=token.tag_name, full_line=''))
+                else:
+                    if last_token.token_type == JINJA_CLOSE_TAG and last_token.closes(token):
+                        pass
+                    else:
+                        end_tokens.append(JinjaToken(JINJA_CLOSE_TAG,
+                                                    lineno=-1, tag_name=token.tag_name, full_line=''))
+                if token.tag_name == 'else':
+                    delay_jinja_end_tag = False
+            elif token_type in (INDENT, DE_INDENT):
+                if token_type == INDENT:
+                    indents.append(token.spacer)
+                else:
+                    if indents:
+                        indents.pop()
+                    if end_tokens:
+                        if end_tokens[-1].token_type == JINJA_CLOSE_TAG and delay_jinja_end_tag:
+                            pass
+                        else:
+                            yield format_output(end_tokens.pop())
+                continue
+            yield format_output(token)
+        while end_tokens:
+            yield format_output(end_tokens.pop())
+            if indents: indent = indents.pop()
 
     def format_output(self, input):
         if self.debug:
-            return ('%s%s\n' % (self.indent, input))
+            indent = self.indents and self.indents[-1] or ''
+            return ('%s%s\n' % (indent, input))
         else:
             return ('%s' % input).strip()
 
@@ -298,4 +337,4 @@ def parse_tag_name(tag_name):
         if classes:
             real_tag_name = '%s class="%s"' % (real_tag_name, " ".join(classes))
         tag_name = real_tag_name
-    return (short_tag_name, tag_name)
+    return (short_tag_name.strip(), tag_name)

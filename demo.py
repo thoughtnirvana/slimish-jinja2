@@ -9,20 +9,25 @@ html
     meta name="keywords" content="template language"
 
   body#home.liquid
-    h1.punch Markup examples
+    h1.punch Text can be provided inline.
 
     #contents.main
-      | This content would come directly under #contents.main.
-        It can span multiple lines.
-      p Text can have dynamic =content .
+      .lorem-ipsum
+        |Text can be nested.
+        And can span multiple lines.
+        Left indent isn't preserved.
+      p
+        |It can have dynamic =content .
     ul
       -for user in users
         li Found a =user
+        li =user.name
+        li =user.age
       -else
-        li No users
+        li No users.
 '''
 
-lexer = Lexer(iter(template.splitlines()))
+lexer = Lexer(template.splitlines())
 translator = Translator(lexer, debug=True)
 for t in translator():
     sys.stdout.write(t)
