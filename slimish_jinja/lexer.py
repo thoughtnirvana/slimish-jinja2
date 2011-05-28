@@ -1,5 +1,5 @@
 import re, sys
-from .tokens import *
+from tokens import *
 
 class Lexer(object):
     """
@@ -44,6 +44,15 @@ class Lexer(object):
             handler = self.handlers.get(stripped_line[0], self.handle_html)
             ret = handler(stripped_line)
             if ret: yield ret
+        indents = self.indents
+        lineno = self.lineno
+        # yield unindent for all open tags.
+        while indents:
+            indent_len = indents.pop()
+            yield IndentToken(UNINDENT, lineno, ' ' * indent_len)
+            lineno += 1
+        # unindent for `html` for which no indent was recorded.
+        yield IndentToken(UNINDENT, lineno, '')
 
     def check_indent(self, line):
         """

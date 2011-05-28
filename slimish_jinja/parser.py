@@ -1,5 +1,5 @@
 import sys, re
-from .tokens import *
+from tokens import *
 
 class Parser(object):
     """
@@ -11,8 +11,21 @@ class Parser(object):
         self.it = lexer()
 
     def parse(self):
-        # Entry point for parsing the template.
-        # The template consists of html and jinja tags.
+        """
+        Entry point for parsing the template.
+        The template consists of html and jinja tags.
+        Grammar::
+            doc -> (html_tag | jinja_tag)+
+            text_tag -> {print}
+            html_tag -> (HTML_NC_TAG {print}
+                        |HTML_TAG {print}
+                        |HTML_OPEN_TAG {print} INDENT (html_tag | jinja_tag | text_tag) UNINDENT HTML_CLOSE_TAG {print}
+                        )+
+            jinja_tag -> (JINJA_NC_TAG {print}
+                        |JINJA_TAG {print}
+                        |JINJA_OPEN_TAG {print} INDENT (html_tag | jinja_tag) UNINDENT JINJA_CLOSE_TAG {print}
+                        )+
+        """
         it = self.it
         while True:
             try:
@@ -86,8 +99,8 @@ class Parser(object):
             raise SyntaxError("Parser error. Expected unindent %d" % self.lookahead.lineno)
         else:
             self.indents.pop()
-            if self.lookahead.spacer != self.indents[-1]:
-                raise SyntaxError("Incorrect indent %d" % self.lookahead.lineno)
+            #if self.lookahead.spacer != self.indents[-1]:
+                #raise SyntaxError("Incorrect indent %d" % self.lookahead.lineno)
             self.match(self.lookahead)
 
     def jinja_tag(self):

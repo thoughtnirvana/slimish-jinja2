@@ -20,7 +20,7 @@ html
       p It can have dynamic =content .
     ul
         li Found a =user
-         li =user.name
+        li =user.name
         li =user.age
         li No users.
 '''
