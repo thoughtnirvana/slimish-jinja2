@@ -5,6 +5,7 @@ from parser import Parser
 
 template = '''
 html
+  / Comments won't be included in the output.
   head
     title Slimish-Jinja Example
     meta name="keywords" content="template language"
@@ -19,6 +20,7 @@ html
         Left indent isn't preserved.
       p It can have dynamic =content .
     ul
+      -for user in users
         li Found a =user
         li =user.name
         li =user.age

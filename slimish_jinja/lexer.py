@@ -11,7 +11,7 @@ class Lexer(object):
 
     def __init__(self, src):
         self.__dict__.update(src=src, indents=[], in_text_block=False,
-                             buf=[], lineno=1, text_lineno=1)
+                             buf=[], lineno=0, text_lineno=1)
         self.handlers = {'-': self.handle_jinja,
                          '=': self.handle_jinja_output,
                          '|': self.handle_text}
@@ -40,13 +40,17 @@ class Lexer(object):
             if self.in_text_block:
                 self.buf.append(line)
                 continue
+            first_char = stripped_line[0]
+            if first_char == '/':
+                # Ignore comments.
+                continue
             # Pass the read line to relevant handler.
-            handler = self.handlers.get(stripped_line[0], self.handle_html)
+            handler = self.handlers.get(first_char, self.handle_html)
             ret = handler(stripped_line)
             if ret: yield ret
+        # yield implicit closed tags.
         indents = self.indents
         lineno = self.lineno
-        # yield unindent for all open tags.
         while indents:
             indent_len = indents.pop()
             yield IndentToken(UNINDENT, lineno, ' ' * indent_len)

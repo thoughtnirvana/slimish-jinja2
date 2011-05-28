@@ -6,7 +6,7 @@ class Parser(object):
     Parses and translates slim syntax to jinja2 syntax.
     """
     def __init__(self, lexer, debug=False):
-        self.__dict__.update(lexer=lexer, out=sys.stdout, debug=debug,
+        self.__dict__.update(lexer=lexer, callback=sys.stdout.write, debug=debug,
                              indents=[], lookahead=None)
         self.it = lexer()
 
@@ -48,15 +48,16 @@ class Parser(object):
             raise SyntaxError("Parser error: expected %s at line %d" (self.lookahead, self.lookahead.lineno))
 
     def html_tag(self):
+        callback = self.callback
         while True:
             if self.lookahead.token_type in (HTML_TAG, HTML_NC_TAG):
                 # No content tags are simple. Output them and
                 # look for next token.
-                self.out.write(self.format_output(self.lookahead))
+                callback(self.format_output(self.lookahead))
                 self.match(self.lookahead)
             elif self.lookahead.token_type == HTML_TAG_OPEN:
                 # Output the tag and save the corresponding closing tag.
-                self.out.write(self.format_output(self.lookahead))
+                callback(self.format_output(self.lookahead))
                 last_tag = self.lookahead
                 last_tag.token_type = HTML_TAG_CLOSE
                 self.match(self.lookahead)
@@ -66,14 +67,14 @@ class Parser(object):
                 if isinstance(self.lookahead, HtmlToken):
                     self.html_tag()
                 elif isinstance(self.lookahead, TextToken):
-                    self.out.write(self.format_output(self.lookahead))
+                    callback(self.format_output(self.lookahead))
                     self.match(self.lookahead)
                 elif isinstance(self.lookahead, JinjaToken):
                     self.jinja_tag()
                 else:
                     raise SyntaxError("Parser error at line %d " % self.lookahead.lineno)
                 self.unindent()
-                self.out.write(self.format_output(last_tag))
+                callback(self.format_output(last_tag))
             else:
                 break
 
@@ -104,14 +105,15 @@ class Parser(object):
             self.match(self.lookahead)
 
     def jinja_tag(self):
+        callback = self.callback
         while True:
             if self.lookahead.token_type in (JINJA_OUTPUT_TAG, JINJA_NC_TAG):
                 # Output contents and look for next tag.
-                self.out.write(self.format_output(self.lookahead))
+                callback(self.format_output(self.lookahead))
                 self.match(self.lookahead)
             elif self.lookahead.token_type == JINJA_OPEN_TAG:
                 # Output the tag and save the corresponding closing tag.
-                self.out.write(self.format_output(self.lookahead))
+                callback(self.format_output(self.lookahead))
                 last_tag = self.lookahead
                 last_tag.token_type = JINJA_CLOSE_TAG
                 self.match(self.lookahead)
@@ -124,7 +126,7 @@ class Parser(object):
                 else:
                     raise SyntaxError("Parser error at line %d" % self.lookahead.lineno)
                 self.unindent()
-                self.out.write(self.format_output(last_tag))
+                callback(self.format_output(last_tag))
             else:
                 break
 
