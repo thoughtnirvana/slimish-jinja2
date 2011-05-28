@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
-from slim_to_jinja import Lexer, Translator
+from lexer import Lexer
+from parser import Parser
 
 template = '''
 html
@@ -16,18 +17,13 @@ html
         |Text can be nested.
         And can span multiple lines.
         Left indent isn't preserved.
-      p
-        |It can have dynamic =content .
+      p It can have dynamic =content .
     ul
-      -for user in users
         li Found a =user
-        li =user.name
+         li =user.name
         li =user.age
-      -else
         li No users.
 '''
 
 lexer = Lexer(template.splitlines())
-translator = Translator(lexer, debug=True)
-for t in translator():
-    sys.stdout.write(t)
+Parser(lexer, debug=True).parse()
