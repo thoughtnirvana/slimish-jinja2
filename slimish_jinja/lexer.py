@@ -3,7 +3,7 @@ from tokens import *
 
 class Lexer(object):
     """
-    Tokenizes html in slim templates format.
+    Tokenizes slim templates.
     """
 
     key_val_pat = re.compile(r'\s+ (.+?) \s*=\s* (["\']) ([^\2]+?) \2', re.X)

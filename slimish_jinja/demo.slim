@@ -1,0 +1,20 @@
+html
+  / Comments won't be included in the output.
+  head
+    title Slimish-Jinja Example
+    meta name="keywords" content="template language"
+
+  body#home.liquid
+    h1.punch Text can be provided inline.
+
+    #contents.main
+      .lorem-ipsum
+        |Text can be nested.
+        And can span multiple lines.
+        Left indent isn't preserved.
+      p =content
+    ul
+        li Found a =user
+        li =user.name
+        li =user.age
+        li No users.

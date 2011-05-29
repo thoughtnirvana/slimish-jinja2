@@ -19,11 +19,11 @@ class Parser(object):
             text_tag -> {print}
             html_tag -> (HTML_NC_TAG {print}
                         |HTML_TAG {print}
-                        |HTML_OPEN_TAG {print} INDENT (html_tag | jinja_tag | text_tag) UNINDENT HTML_CLOSE_TAG {print}
+                        |HTML_OPEN_TAG {print} INDENT (html_tag | jinja_tag | jinja_output_tag | text_tag) UNINDENT HTML_CLOSE_TAG {print}
                         )+
             jinja_tag -> (JINJA_NC_TAG {print}
                         |JINJA_TAG {print}
-                        |JINJA_OPEN_TAG {print} INDENT (html_tag | jinja_tag) UNINDENT JINJA_CLOSE_TAG {print}
+                        |JINJA_OPEN_TAG {print} INDENT (html_tag | jinja_tag | jinja_output_tag | text_tag) UNINDENT JINJA_CLOSE_TAG {print}
                         )+
         """
         it = self.it
@@ -35,7 +35,8 @@ class Parser(object):
                 elif isinstance(self.lookahead, JinjaToken):
                     self.jinja_tag()
                 else:
-                    raise SyntaxError("Parser error at line %d" % self.lookahead.lineno)
+                    raise SyntaxError("Parser error at line %d: %s" %
+                                      (self.lookahead.lineno, self.lookahead))
             except StopIteration, ex:
                 break
 
@@ -66,13 +67,14 @@ class Parser(object):
                 # or jinja tags.
                 if isinstance(self.lookahead, HtmlToken):
                     self.html_tag()
-                elif isinstance(self.lookahead, TextToken):
-                    callback(self.format_output(self.lookahead))
-                    self.match(self.lookahead)
                 elif isinstance(self.lookahead, JinjaToken):
                     self.jinja_tag()
+                elif isinstance(self.lookahead, TextToken) or isinstance(self.lookahead, JinjaOutputToken):
+                    callback(self.format_output(self.lookahead))
+                    self.match(self.lookahead)
                 else:
-                    raise SyntaxError("Parser error at line %d " % self.lookahead.lineno)
+                    raise SyntaxError("Parser error at line %d: %s" %
+                                      (self.lookahead.lineno, self.lookahead))
                 self.unindent()
                 callback(self.format_output(last_tag))
             else:
@@ -84,11 +86,12 @@ class Parser(object):
         spaces.
         """
         if self.lookahead.token_type != INDENT:
-            raise SyntaxError("Parser error. Expected indent at line %d " % self.lookahead.lineno)
+            raise SyntaxError("Parser error. Expected indent at line %d: %s" %
+                              (self.lookahead.lineno, self.lookahead))
         else:
             spacer = self.lookahead.spacer
             if ' ' in spacer and '\t' in spacer:
-                raise SyntaxError("Mixed tabs and spaces at line %d " % self.lookahead.lineno)
+                raise SyntaxError("Mixed tabs and spaces at line %d" % self.lookahead.lineno)
             self.indents.append(spacer)
             self.match(self.lookahead)
 
@@ -123,8 +126,12 @@ class Parser(object):
                     self.html_tag()
                 elif isinstance(self.lookahead, JinjaToken):
                     self.jinja_tag()
+                elif isinstance(self.lookahead, TextToken) or isinstance(self.lookahead, JinjaOutputToken):
+                    callback(self.format_output(self.lookahead))
+                    self.match(self.lookahead)
                 else:
-                    raise SyntaxError("Parser error at line %d" % self.lookahead.lineno)
+                    raise SyntaxError("Parser error at line %d: %s" %
+                                      (self.lookahead.lineno, self.lookahead))
                 self.unindent()
                 callback(self.format_output(last_tag))
             else:
