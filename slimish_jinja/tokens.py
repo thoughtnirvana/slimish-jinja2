@@ -53,7 +53,7 @@ class HtmlToken(Token):
 
 
 # Indent token types.
-UNINDENT = intern('de_indent')
+UNINDENT = intern('unindent')
 INDENT = intern('indent')
 
 class IndentToken(Token):

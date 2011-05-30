@@ -29,8 +29,7 @@ class Lexer(object):
             if indent_change:
                 if self.in_text_block:
                     if indent_change.token_type == UNINDENT:
-                        text = (t.lstrip() for t in self.buf)
-                        yield TextToken(TEXT, self.text_lineno, " ".join(text))
+                        yield TextToken(TEXT, self.text_lineno, "".join(self.buf))
                         yield indent_change
                         self.in_text_block = False
                         self.buf = []
@@ -38,7 +37,7 @@ class Lexer(object):
                     yield indent_change
             # Keep reading text if we are in text block.
             if self.in_text_block:
-                self.buf.append(line)
+                self.buf.append(line[self.indents[-1]:].rstrip())
                 continue
             first_char = stripped_line[0]
             if first_char == '/':
@@ -69,8 +68,9 @@ class Lexer(object):
             indent_len = len(indent)
             indents = self.indents
             if not indents or indent_len > indents[-1]:
-                indents.append(indent_len)
-                return IndentToken(INDENT, self.lineno, indent)
+                if not self.in_text_block:
+                    indents.append(indent_len)
+                    return IndentToken(INDENT, self.lineno, indent)
             elif indent_len < self.indents[-1]:
                 self.indents.pop()
                 return IndentToken(UNINDENT, self.lineno, indent)
