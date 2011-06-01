@@ -18,39 +18,39 @@ For quick reference, this slim::
         / Inline static content.
         title
         -block title
-            |Slimish-Jinja Example
+           |Slimish-Jinja Example
         / Self closing tag with attributes.
         meta name="keywords" content="template language"
         script
-        / Empty jinja tag.
-        @block script
+          / Empty jinja tag.
+          @block script
 
     / 'id' and 'class' shortcut.
     body#home.fluid.liquid
         / Nested static content.
         h1
-        |This is my header.
+          |This is my header.
         / 'div' with 'id' and 'class' shortcut.
         #contents.main
-        / Empty html tag.
-        %div
-        p Dynamic =content
-        p
+          / Empty html tag.
+          %div
+          p Dynamic =content
+          p
             |Nested dyanmic =content
                     Left indent is preserved in text blocks.
-        p
+          p
             |<a href\="http://www.google.com">Google</a>
-        / Dynamic attributes.
-        ul class="=user_class"
-        / Jinja tag.
-        -for user in users
-            li =user.name
-            -if user.last_name
-            li =user.last_name
-            -elif user.middle_name
-            li =user.middle_name
-        -else
-            li No user found.
+          / Dynamic attributes.
+          ul class="=user_class"
+            / Jinja tag.
+            -for user in users
+              li =user.name
+              -if user.last_name
+                li =user.last_name
+              -elif user.middle_name
+                li =user.middle_name
+            -else
+              li No user found.
 
 
 converts to::
