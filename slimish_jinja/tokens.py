@@ -13,6 +13,34 @@ class Token(object):
     pass
 
 
+DOCTYPE = intern('doctype')
+class DoctypeToken(Token):
+    doctypes = {'html': '<!doctype html>',
+                '5': '<!doctype html>',
+                '1.1': '<!doctype html public "-//w3c//dtd xhtml 1.1//en" "http://www.w3.org/tr/xhtml11/dtd/xhtml11.dtd">',
+                'x_strict': '<!doctype html public "-//w3c//dtd xhtml 1.0 strict//en" "http://www.w3.org/tr/xhtml1/dtd/xhtml1-strict.dtd">',
+                'x_frameset': '<!doctype html public "-//w3c//dtd xhtml 1.0 frameset//en" "http://www.w3.org/tr/xhtml1/dtd/xhtml1-frameset.dtd">',
+                'x_mobile': '<!doctype html public "-//wapforum//dtd xhtml mobile 1.2//en" "http://www.openmobilealliance.org/tech/dtd/xhtml-mobile12.dtd">',
+                'x_basic': '<!doctype html public "-//w3c//dtd xhtml basic 1.1//en" "http://www.w3.org/tr/xhtml-basic/xhtml-basic11.dtd">',
+                'x_transitional': '<!doctype html public "-//w3c//dtd xhtml 1.0 transitional//en" "http://www.w3.org/tr/xhtml1/dtd/xhtml1-transitional.dtd">',
+                'strict': '<!doctype html public "-//w3c//dtd html 4.01//en" "http://www.w3.org/tr/html4/strict.dtd">',
+                'frameset': '<!doctype html public "-//w3c//dtd html 4.01 frameset//en" "http://www.w3.org/tr/html4/frameset.dtd">',
+                'transitional': '<!doctype html public "-//w3c//dtd html 4.01 transitional//en" "http://www.w3.org/tr/html4/loose.dtd">',
+               }
+
+    def __init__(self, token_type, lineno, dtd):
+        self.original_dtd = dtd
+        self.__dict__.update(token_type=token_type, lineno=lineno)
+        bang_idx = dtd.index('!')
+        self.dtd = dtd[bang_idx+1:].strip()
+
+    def __str__(self):
+        try:
+            return self.doctypes[self.dtd]
+        except KeyError, ex:
+            raise SyntaxError("Invalid doctype at line %d: %s" % (self.lineno, self.original_dtd))
+
+
 # HTML token types.
 HTML_TAG = intern('html_tag')
 HTML_NC_TAG = intern('html_nc_tag')

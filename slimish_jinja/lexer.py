@@ -11,69 +11,76 @@ class Lexer(object):
 
     def __init__(self, src):
         self.__dict__.update(src=src, indents=[], in_text_block=False,
-                             buf=[], lineno=0, text_lineno=1)
+                             buf=[], lineno=0)
         self.handlers = {'-': self.handle_jinja,
                          '=': self.handle_jinja_output,
-                         '|': self.handle_text}
+                         '|': self.handle_text,
+                         '!': self.handle_doctype}
 
     def __call__(self):
         """
         Tokenizes `self.src` and yields `Token` objects..
         """
+        empty_file = True
         for line in self.src:
             self.lineno += 1
-            # Ignore blank lines and check for indent.
+            # Ignore blank lines and comments.
             stripped_line = line.strip()
-            if not stripped_line and not self.in_text_block: continue
+            if not stripped_line or (stripped_line and stripped_line[0] == '/'):
+                continue
+            empty_file = False
+            # Check for indent changes.
             indent_change = self.check_indent(line)
             if indent_change:
+                change_type, indent_change = indent_change
                 if self.in_text_block:
-                    if indent_change.token_type == UNINDENT:
-                        yield TextToken(TEXT, self.text_lineno, "".join(self.buf))
-                        yield indent_change
+                    if change_type == UNINDENT:
+                        yield TextToken(TEXT, self.lineno, "".join(self.buf))
                         self.in_text_block = False
                         self.buf = []
-                else:
-                    yield indent_change
+                for change in indent_change:
+                    yield change
             # Keep reading text if we are in text block.
             if self.in_text_block:
                 self.buf.append(line[self.indents[-1]:].rstrip())
                 continue
-            first_char = stripped_line[0]
-            if first_char == '/':
-                # Ignore comments.
-                continue
             # Pass the read line to relevant handler.
+            first_char = stripped_line[0]
             handler = self.handlers.get(first_char, self.handle_html)
             ret = handler(stripped_line)
             if ret: yield ret
-        # yield implicit closed tags.
-        indents = self.indents
-        lineno = self.lineno
-        while indents:
-            indent_len = indents.pop()
-            yield IndentToken(UNINDENT, lineno, ' ' * indent_len)
-            lineno += 1
-        # unindent for `html` for which no indent was recorded.
-        yield IndentToken(UNINDENT, lineno, '')
+        if not empty_file:
+            # yield implicity closed tags.
+            indents = self.indents
+            lineno = self.lineno
+            while indents:
+                yield IndentToken(UNINDENT, lineno, ' ' * indents.pop())
+                lineno += 1
+            # unindent for `html` for which no indent was recorded.
+            yield IndentToken(UNINDENT, lineno, '')
 
     def check_indent(self, line):
         """
         Checks for increase or decrease in indent.
-        Yield `IndentToken` if index changes.
+        yields `IndentToken` if index changes.
         """
         indent = self.whitespace.match(line)
         if indent:
             indent = indent.group()
             indent_len = len(indent)
             indents = self.indents
+            # Record indents.
             if not indents or indent_len > indents[-1]:
+                # Indents are part of text if in text block.
                 if not self.in_text_block:
                     indents.append(indent_len)
-                    return IndentToken(INDENT, self.lineno, indent)
+                    return INDENT, [IndentToken(INDENT, self.lineno, indent)]
             elif indent_len < self.indents[-1]:
-                self.indents.pop()
-                return IndentToken(UNINDENT, self.lineno, indent)
+                indents = self.indents
+                changes = []
+                while indents and indents[-1] > indent_len:
+                    changes.append(IndentToken(UNINDENT, self.lineno, ' ' * indents.pop()))
+                return UNINDENT, changes
         return False
 
     def extract_values(self, tag_name, line):
@@ -123,7 +130,6 @@ class Lexer(object):
         Handles text nested with pipes.
         """
         self.in_text_block = True
-        self.text_start_line = self.lineno
         self.buf.append(line[1:])
 
 
@@ -132,3 +138,9 @@ class Lexer(object):
         Handles output statements
         """
         return JinjaOutputToken(JINJA_OUTPUT_TAG, self.lineno, line[1:])
+
+    def handle_doctype(self, line):
+        """
+        Handles text nested with pipes.
+        """
+        return DoctypeToken(DOCTYPE, self.lineno, line)

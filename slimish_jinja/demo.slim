@@ -1,20 +1,27 @@
+!5
 html
-  / Comments won't be included in the output.
   head
+    / Inline static content.
     title Slimish-Jinja Example
+    / Self closing tag with attributes.
     meta name="keywords" content="template language"
 
+  / 'id' and 'class' shortcut.
   body#home.liquid
-    h1.punch Text can be provided inline.
-
+    / Nested static content.
+    h1
+      |This is my header.
+    / 'div' with 'id' and 'class' shortcut.
     #contents.main
-      .lorem-ipsum
-        |Text can be nested.
-         And can span multiple lines.
-            Left indent is preserved.
-      p =content
-    ul
-        li Found a =user
+      p Dynamic =content
+      p
+        |Nested dyanmic =content
+                Left indent is preserved in text blocks.
+    / Dynamic attributes
+    ul class="=user_class"
+      / Jinja tag.
+      -for user in users
         li =user.name
+        -if user.last_name
+          li =user.last_name
         li =user.age
-        li No users.

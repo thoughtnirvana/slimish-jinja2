@@ -15,40 +15,54 @@ class Parser(object):
         Entry point for parsing the template.
         The template consists of html and jinja tags.
         Grammar::
-            doc -> (html_tag | jinja_tag)+
+            doc -> doctype? (html_tag | jinja_tag)+
             text_tag -> {print}
             html_tag -> (HTML_NC_TAG {print}
                         |HTML_TAG {print}
-                        |HTML_OPEN_TAG {print} INDENT (html_tag | jinja_tag | jinja_output_tag | text_tag) UNINDENT HTML_CLOSE_TAG {print}
+                        |HTML_OPEN_TAG {print} INDENT (doc)* UNINDENT HTML_CLOSE_TAG {print}
                         )+
             jinja_tag -> (JINJA_NC_TAG {print}
-                        |JINJA_TAG {print}
-                        |JINJA_OPEN_TAG {print} INDENT (html_tag | jinja_tag | jinja_output_tag | text_tag) UNINDENT JINJA_CLOSE_TAG {print}
-                        )+
+                         |JINJA_TAG {print}
+                         |jinja_open_tag {print} INDENT (doc)* UNINDENT jinja_close_tag {print}
+                         )+
         """
         it = self.it
-        while True:
-            try:
-                self.lookahead = it.next()
-                if isinstance(self.lookahead, HtmlToken):
-                    self.html_tag()
-                elif isinstance(self.lookahead, JinjaToken):
-                    self.jinja_tag()
-                else:
-                    raise SyntaxError("Parser error at line %d: %s" %
-                                      (self.lookahead.lineno, self.lookahead))
-            except StopIteration, ex:
-                break
+        try:
+            self.lookahead = it.next()
+            if isinstance(self.lookahead, DoctypeToken):
+                self.callback(self.format_output(self.lookahead))
+                self.match(self.lookahead)
+            # Check for empty file.
+            if self.lookahead:
+                self.doc()
+        except StopIteration, ex:
+            pass
 
-    def match(self, lookahead):
-        # Check the current `lookahead` token and read the next
-        # `lookahead`.
-        if self.lookahead == lookahead:
-            self.lookahead = self.it.next()
-        else:
-            raise SyntaxError("Parser error: expected %s at line %d" (self.lookahead, self.lookahead.lineno))
+    def doc(self):
+        """
+        Jinja template non-terminal.
+        Contains 0 or more html/jinja tags.
+        Production::
+            doc -> (html_tag | jinja_tag)*
+        """
+        while True:
+            if isinstance(self.lookahead, HtmlToken):
+                self.html_tag()
+            elif isinstance(self.lookahead, JinjaToken):
+                self.jinja_tag()
+            elif isinstance(self.lookahead, TextToken) or isinstance(self.lookahead, JinjaOutputToken):
+                self.output_tag(self.lookahead)
+            else:
+                return
 
     def html_tag(self):
+        """
+        Production::
+            html_tag -> (HTML_NC_TAG {print}
+                        |HTML_TAG {print}
+                        |HTML_OPEN_TAG {print} INDENT (doc)* UNINDENT HTML_CLOSE_TAG {print}
+                        )+
+        """
         callback = self.callback
         while True:
             if self.lookahead.token_type in (HTML_TAG, HTML_NC_TAG):
@@ -62,23 +76,48 @@ class Parser(object):
                 last_tag = self.lookahead
                 last_tag.token_type = HTML_TAG_CLOSE
                 self.match(self.lookahead)
+                # Indent, more content, unindent.
                 self.indent()
-                # An open html tag can contain text, other html tags
-                # or jinja tags.
-                if isinstance(self.lookahead, HtmlToken):
-                    self.html_tag()
-                elif isinstance(self.lookahead, JinjaToken):
-                    self.jinja_tag()
-                elif isinstance(self.lookahead, TextToken) or isinstance(self.lookahead, JinjaOutputToken):
-                    callback(self.format_output(self.lookahead))
-                    self.match(self.lookahead)
-                else:
-                    raise SyntaxError("Parser error at line %d: %s" %
-                                      (self.lookahead.lineno, self.lookahead))
+                self.doc()
                 self.unindent()
                 callback(self.format_output(last_tag))
             else:
-                break
+                return
+
+    def jinja_tag(self):
+        """
+        Production::
+            jinja_tag -> (JINJA_NC_TAG {print}
+                         |JINJA_TAG {print}
+                         |jinja_open_tag {print} INDENT (doc)* UNINDENT jinja_close_tag {print}
+                         )+
+        """
+        callback = self.callback
+        while True:
+            if self.lookahead.token_type in (JINJA_OUTPUT_TAG, JINJA_NC_TAG):
+                # Output contents and look for next tag.
+                callback(self.format_output(self.lookahead))
+                self.match(self.lookahead)
+            elif self.lookahead.token_type == JINJA_OPEN_TAG:
+                # Output the tag and save the corresponding closing tag.
+                callback(self.format_output(self.lookahead))
+                last_tag = self.lookahead
+                last_tag.token_type = JINJA_CLOSE_TAG
+                self.match(self.lookahead)
+                # Indent, more content, unindent.
+                self.indent()
+                self.doc()
+                self.unindent()
+                callback(self.format_output(last_tag))
+            else:
+                return
+
+    def output_tag(self, lookahead):
+        """
+        Sends output to `self.callback` and reads next token.
+        """
+        self.callback(self.format_output(self.lookahead))
+        self.match(self.lookahead)
 
     def indent(self):
         """
@@ -103,39 +142,15 @@ class Parser(object):
             raise SyntaxError("Parser error. Expected unindent %d" % self.lookahead.lineno)
         else:
             self.indents.pop()
-            #if self.lookahead.spacer != self.indents[-1]:
-                #raise SyntaxError("Incorrect indent %d" % self.lookahead.lineno)
             self.match(self.lookahead)
 
-    def jinja_tag(self):
-        callback = self.callback
-        while True:
-            if self.lookahead.token_type in (JINJA_OUTPUT_TAG, JINJA_NC_TAG):
-                # Output contents and look for next tag.
-                callback(self.format_output(self.lookahead))
-                self.match(self.lookahead)
-            elif self.lookahead.token_type == JINJA_OPEN_TAG:
-                # Output the tag and save the corresponding closing tag.
-                callback(self.format_output(self.lookahead))
-                last_tag = self.lookahead
-                last_tag.token_type = JINJA_CLOSE_TAG
-                self.match(self.lookahead)
-                self.indent()
-                # It can contain other jinja tags or html tags.
-                if isinstance(self.lookahead, HtmlToken):
-                    self.html_tag()
-                elif isinstance(self.lookahead, JinjaToken):
-                    self.jinja_tag()
-                elif isinstance(self.lookahead, TextToken) or isinstance(self.lookahead, JinjaOutputToken):
-                    callback(self.format_output(self.lookahead))
-                    self.match(self.lookahead)
-                else:
-                    raise SyntaxError("Parser error at line %d: %s" %
-                                      (self.lookahead.lineno, self.lookahead))
-                self.unindent()
-                callback(self.format_output(last_tag))
-            else:
-                break
+    def match(self, lookahead):
+        # Check the current `lookahead` token and read the next
+        # `lookahead`.
+        if self.lookahead == lookahead:
+            self.lookahead = self.it.next()
+        else:
+            raise SyntaxError("Parser error: expected %s at line %d" (self.lookahead, self.lookahead.lineno))
 
     def format_output(self, input):
         if self.debug:
