@@ -8,8 +8,6 @@ html
     / Self closing tag with attributes.
     meta name="keywords" content="template language"
     script
-      | var w = window;
-        
       / Empty jinja tag.
       @block script
 
@@ -26,6 +24,8 @@ html
       p
         |Nested dyanmic =content
                 Left indent is preserved in text blocks.
+      p
+        |<a href\="http://www.google.com">Google</a>
     / Dynamic attributes.
     ul class="=user_class"
       / Jinja tag.

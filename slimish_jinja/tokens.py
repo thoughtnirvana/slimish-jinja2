@@ -150,8 +150,8 @@ def parse_text_contents(contents):
     """
     Substitutes `=val` with `{{ val }}`.
     """
-    dynamic_val = re.compile(r'= \s* ([^\s]+)', re.X)
-    escaped_val = re.compile(r'\ \s* (=)', re.X)
+    dynamic_val = re.compile(r'(?<!\\)= \s* ([^\s]+)', re.X)
+    escaped_val = re.compile(r'\\ \s* (=)', re.X)
     contents = dynamic_val.sub(r'%s \1 %s' % (env['variable_start_string'],
                                               env['variable_end_string']), contents)
     contents = escaped_val.sub(r'\1', contents)
