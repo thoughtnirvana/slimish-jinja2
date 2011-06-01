@@ -2,9 +2,14 @@
 html
   head
     / Inline static content.
-    title Slimish-Jinja Example
+    title
+      -block title
+        |Slimish-Jinja Example
     / Self closing tag with attributes.
     meta name="keywords" content="template language"
+    script
+      / Empty jinja tag.
+      @block script
 
   / 'id' and 'class' shortcut.
   body#home.liquid
@@ -13,6 +18,8 @@ html
       |This is my header.
     / 'div' with 'id' and 'class' shortcut.
     #contents.main
+      / Empty html tag.
+      %div
       p Dynamic =content
       p
         |Nested dyanmic =content
@@ -24,4 +31,8 @@ html
         li =user.name
         -if user.last_name
           li =user.last_name
+        -else
+          li No last name.
         li =user.age
+      -else
+        li No user found.

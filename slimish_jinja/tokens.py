@@ -104,7 +104,8 @@ class TextToken(Token):
         return self.text
 
 
-JINJA_OPEN_TAG = intern('jinja_tag')
+JINJA_TAG = intern('jinja_tag')
+JINJA_OPEN_TAG = intern('jinja_open_tag')
 JINJA_CLOSE_TAG = intern('jinja_close_tag')
 JINJA_NC_TAG = intern('jinja_nc_tag')
 
@@ -113,7 +114,6 @@ class JinjaToken(Token):
                                     ['include', 'extends', 'import', 'set',
                                      'from', 'do', 'break', 'continue',
                                     ]))
-    tag_pairs = {'for': 'else', 'if': 'elif'}
 
     def __init__(self, token_type, lineno, tag_name, full_line):
         self.__dict__.update(token_type=token_type, lineno=lineno,
@@ -126,11 +126,18 @@ class JinjaToken(Token):
         return self.tag_pairs[self.tag_name] == other.tag_name.strip()
 
     def __str__(self):
-        if self.token_type == JINJA_CLOSE_TAG:
+        if self.token_type == JINJA_TAG:
+            open_tag = '%s %s %s' % (env['block_start_string'], self.full_line,
+                                    env['block_end_string'])
+            close_tag = '%s %s %s' % (env['block_start_string'], 'end%s' % self.tag_name,
+                                     env['block_end_string'])
+            return '%s%s' % (open_tag, close_tag)
+        elif self.token_type == JINJA_OPEN_TAG:
+            return '%s %s %s' % (env['block_start_string'], self.full_line,
+                                 env['block_end_string'])
+        elif self.token_type == JINJA_CLOSE_TAG:
             return '%s %s %s' % (env['block_start_string'], 'end%s' % self.tag_name,
                                 env['block_end_string'])
-        return '%s %s %s' % (env['block_start_string'], self.full_line,
-                             env['block_end_string'])
 
 
 JINJA_OUTPUT_TAG = intern('jinja_output_tag')

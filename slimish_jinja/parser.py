@@ -76,10 +76,7 @@ class Parser(object):
                 last_tag = self.lookahead
                 last_tag.token_type = HTML_TAG_CLOSE
                 self.match(self.lookahead)
-                # Indent, more content, unindent.
-                self.indent()
-                self.doc()
-                self.unindent()
+                self.more_content()
                 callback(self.format_output(last_tag))
             else:
                 return
@@ -94,23 +91,67 @@ class Parser(object):
         """
         callback = self.callback
         while True:
-            if self.lookahead.token_type in (JINJA_OUTPUT_TAG, JINJA_NC_TAG):
+            if self.lookahead.token_type in (JINJA_TAG, JINJA_OUTPUT_TAG, JINJA_NC_TAG):
                 # Output contents and look for next tag.
                 callback(self.format_output(self.lookahead))
                 self.match(self.lookahead)
             elif self.lookahead.token_type == JINJA_OPEN_TAG:
+                lookahead = self.lookahead
                 # Output the tag and save the corresponding closing tag.
                 callback(self.format_output(self.lookahead))
-                last_tag = self.lookahead
-                last_tag.token_type = JINJA_CLOSE_TAG
-                self.match(self.lookahead)
-                # Indent, more content, unindent.
-                self.indent()
-                self.doc()
-                self.unindent()
-                callback(self.format_output(last_tag))
+                close_tag= self.lookahead
+                close_tag.token_type = JINJA_CLOSE_TAG
+                if lookahead.tag_name == 'for':
+                    self.jinja_for_tag(lookahead, close_tag)
+                elif lookahead.tag_name == 'if':
+                    self.jinja_if_tag(lookahead, close_tag)
+                else:
+                    self.match(self.lookahead)
+                    self.more_content()
+                    callback(self.format_output(close_tag))
             else:
                 return
+
+    def jinja_for_tag(self, lookahead, close_tag):
+        """
+        Parses jinja for tag.
+        Production::
+            for_tag -> for (doc)+ (else (doc)+)?
+        """
+        self.match(lookahead)
+        self.more_content()
+        if self.lookahead.token_type == JINJA_OPEN_TAG and self.lookahead.tag_name == 'else':
+            self.callback(self.format_output(self.lookahead))
+            self.match(self.lookahead)
+            self.more_content()
+        self.callback(self.format_output(close_tag))
+
+    def jinja_if_tag(self, lookahead, close_tag):
+        """
+        Parses jinja if tag.
+        Production::
+            if_tag -> if (doc)+ (elif (doc)+)* (else (doc)+)?
+        """
+        self.match(lookahead)
+        self.more_content()
+        while self.lookahead.token_type == JINJA_OPEN_TAG and self.lookahead.tag_name == 'elif':
+            self.callback(self.format_output(self.lookahead))
+            self.match(self.lookahead)
+            self.more_content()
+        if self.lookahead.token_type == JINJA_OPEN_TAG and self.lookahead.tag_name == 'else':
+            self.callback(self.format_output(self.lookahead))
+            self.match(self.lookahead)
+            self.more_content()
+        self.callback(self.format_output(close_tag))
+
+    def more_content(self):
+        """
+        Parses nested content.
+        """
+        # Indent, more content, unindent.
+        self.indent()
+        self.doc()
+        self.unindent()
 
     def output_tag(self, lookahead):
         """
@@ -145,14 +186,19 @@ class Parser(object):
             self.match(self.lookahead)
 
     def match(self, lookahead):
-        # Check the current `lookahead` token and read the next
-        # `lookahead`.
+        """
+        Checks the current `lookahead` token and read the next
+        `lookahead`.
+        """
         if self.lookahead == lookahead:
             self.lookahead = self.it.next()
         else:
             raise SyntaxError("Parser error: expected %s at line %d" (self.lookahead, self.lookahead.lineno))
 
     def format_output(self, input):
+        """
+        Indents output and inserts newline if `self.debug` is True.
+        """
         if self.debug:
             indent = self.indents and self.indents[-1] or ''
             return ('%s%s\n' % (indent, input))

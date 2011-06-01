@@ -15,6 +15,8 @@ class Lexer(object):
         self.handlers = {'-': self.handle_jinja,
                          '=': self.handle_jinja_output,
                          '|': self.handle_text,
+                         '%': self.handle_empty_html,
+                         '@': self.handle_empty_jinja,
                          '!': self.handle_doctype}
 
     def __call__(self):
@@ -101,7 +103,7 @@ class Lexer(object):
 
     def handle_html(self, line):
         """
-        Returns `(token_type, token_vals)` for html tags.
+        Returns token for html tags.
         """
         tag_and_vals = self.whitespace.split(line)
         tag_name = intern(tag_and_vals[0])
@@ -116,6 +118,17 @@ class Lexer(object):
         else:
             return HtmlToken(HTML_TAG_OPEN, self.lineno, tag_name, attrs)
 
+    def handle_empty_html(self, line):
+        """
+        Returns token for empty html elements.
+        %div => <div></div>
+        """
+        tag_and_vals = self.whitespace.split(line[1:])
+        tag_name = intern(tag_and_vals[0])
+        # Get the attributes for the tag.
+        attrs, _ = self.extract_values(tag_name, line)
+        return HtmlToken(HTML_TAG, self.lineno, tag_name, attrs, contents=' ')
+
     def handle_jinja(self, line):
         """
         Handles jinja tags.
@@ -124,6 +137,14 @@ class Lexer(object):
         if tag_name in JinjaToken.no_content_jinja_tags:
             return JinjaToken(JINJA_NC_TAG, self.lineno, tag_name, line[1:])
         return JinjaToken(JINJA_OPEN_TAG, self.lineno, tag_name, line[1:])
+
+    def handle_empty_jinja(self, line):
+        """
+        Handles empty jinja tags.
+        @block title => {% block title %}{% endblock %}
+        """
+        tag_name = intern(self.whitespace.split(line)[0][1:])
+        return JinjaToken(JINJA_TAG, self.lineno, tag_name, line[1:])
 
     def handle_text(self, line):
         """
