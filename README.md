@@ -7,6 +7,9 @@ I will be uploading it to PyPi soon. By then, clone the repository. Examples of 
 extension(jinja_demo.py)`,
 with `Flask(flask_demo.py)` and standalone`(convert.py and demo.py)` are bundled.
 
+If you want to use it for any other purpose, the `lexer - lexer.py` and `parser - parser.py` are simple enough.
+`lexer` reads the input by lines and generates tokens. `parser` implements a hand rolled recursive descent parser.
+
 For quick reference, this slim::
 
     !5
