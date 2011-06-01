@@ -97,7 +97,7 @@ class Lexer(object):
         for m in self.key_val_pat.finditer(line):
             attrs[m.group(1)] = m.group(3)
         if not m or m.end() < len(line) - 1:
-            start_idx = m.end() + 1 if m else len(tag_name)
+            start_idx = m.end() if m else len(tag_name)
             contents = line[start_idx:]
         return attrs, contents
 
