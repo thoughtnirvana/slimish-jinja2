@@ -174,28 +174,28 @@ converts to::
 
 #### Dynamic contents in attribute
 
-  a href=user.url =user.name  
+      a href=user.url =user.name  
 
 
 #### **id** and **classname** shortcuts
 
-  #contents.main.liquid => <div id="contents" class="main liquid">
+    #contents.main.liquid => <div id="contents" class="main liquid">
 
-  body#home.left => <body id="home" class="left">
+    body#home.left => <body id="home" class="left">
 
 
 #### Code comments.
 
-  / Single slash comments.
-  / Not part of the output.
-  p This is content.
+    / Single slash comments.
+    / Not part of the output.
+    p This is content.
 
 
 #### Empty html tags
 
-  %div => <div></div>
+    %div => <div></div>
 
 
 #### Empty jinja tags.
 
-  @block title => {%block title %}{% endblock %}
+    @block title => {%block title %}{% endblock %}
