@@ -1,4 +1,4 @@
-import os.path
+import os.path, sys
 from cStringIO import StringIO
 # Jinja imports.
 from jinja2 import  Environment, TemplateSyntaxError
@@ -11,12 +11,12 @@ class SlimishExtension(Extension):
     """
     Converts slim templates to jinja format.
     """
-    def __init__(self, env):
+    def __init__(self, environment):
         """
         Sets defaults for the extension.
         """
         super(SlimishExtension, self).__init__(environment)
-        env.extend(
+        environment.extend(
             slim_debug=True,
             file_extensions=('.slim',),
         )
@@ -26,9 +26,9 @@ class SlimishExtension(Extension):
         Converts given slim template to jinja template.
         If `source` isn't slim, it's returned as is.
         """
-        if not os.path.splitext(name)[1] in self.env.file_extensions:
+        if not os.path.splitext(name)[1] in self.environment.file_extensions:
             return source
         output = StringIO()
         lexer = Lexer(iter(source.splitlines()))
-        Parser(lexer, callback=output.write, debug=self.env.slim_debug).parse()
+        Parser(lexer, callback=output.write, debug=self.environment.slim_debug).parse()
         return output.getvalue()

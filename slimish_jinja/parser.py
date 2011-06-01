@@ -5,8 +5,8 @@ class Parser(object):
     """
     Parses and translates slim syntax to jinja2 syntax.
     """
-    def __init__(self, lexer, debug=False):
-        self.__dict__.update(lexer=lexer, callback=sys.stdout.write, debug=debug,
+    def __init__(self, lexer, debug=False, callback=sys.stdout.write):
+        self.__dict__.update(lexer=lexer, callback=callback, debug=debug,
                              indents=[], lookahead=None)
         self.it = lexer()
 
