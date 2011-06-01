@@ -119,12 +119,6 @@ class JinjaToken(Token):
         self.__dict__.update(token_type=token_type, lineno=lineno,
                              tag_name=tag_name.strip(), full_line=full_line)
 
-    def closes(self, other):
-        """
-        Checks if this tag includes the `other` tag.
-        """
-        return self.tag_pairs[self.tag_name] == other.tag_name.strip()
-
     def __str__(self):
         if self.token_type == JINJA_TAG:
             open_tag = '%s %s %s' % (env['block_start_string'], self.full_line,
@@ -132,7 +126,7 @@ class JinjaToken(Token):
             close_tag = '%s %s %s' % (env['block_start_string'], 'end%s' % self.tag_name,
                                      env['block_end_string'])
             return '%s%s' % (open_tag, close_tag)
-        elif self.token_type == JINJA_OPEN_TAG:
+        elif self.token_type in (JINJA_OPEN_TAG, JINJA_NC_TAG):
             return '%s %s %s' % (env['block_start_string'], self.full_line,
                                  env['block_end_string'])
         elif self.token_type == JINJA_CLOSE_TAG:
