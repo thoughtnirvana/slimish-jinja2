@@ -14,7 +14,7 @@ For quick reference, this slim::
 
     !5
     html
-    head
+      head
         / Inline static content.
         title
         -block title
@@ -25,8 +25,8 @@ For quick reference, this slim::
           / Empty jinja tag.
           @block script
 
-    / 'id' and 'class' shortcut.
-    body#home.fluid.liquid
+      / 'id' and 'class' shortcut.
+      body#home.fluid.liquid
         / Nested static content.
         h1
           |This is my header.
