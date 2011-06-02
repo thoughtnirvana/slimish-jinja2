@@ -38,8 +38,9 @@ For quick reference, this slim::
           p
             |Nested dyanmic =content
                     Left indent is preserved in text blocks.
+          / Mixing html is fine as well.
           p
-            |<a href\="http://www.google.com">Google</a>
+            |<a href\="http://www.thoughtnirvana.com">ThoughtNirvana</a>
           / Dynamic attributes.
           ul class="=user_class"
             / Jinja tag.
@@ -79,7 +80,7 @@ converts to::
             Nested dyanmic {{ content }}        Left indent is preserved in text blocks.
         </p>
         <p>
-            <a href="http://www.google.com">Google</a>
+            <a href="http://www.thoughtnirvana.com">ThoughtNirvana</a>
         </p>
         </div>
         <ul  class="{{ user_class }}">
