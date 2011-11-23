@@ -1,4 +1,4 @@
-import re, sys
+import re
 from tokens import *
 
 class Lexer(object):
@@ -77,8 +77,7 @@ class Lexer(object):
                 if not self.in_text_block:
                     indents.append(indent_len)
                     return INDENT, [IndentToken(INDENT, self.lineno, indent)]
-            elif indent_len < self.indents[-1]:
-                indents = self.indents
+            elif indent_len < indents[-1]:
                 changes = []
                 while indents and indents[-1] > indent_len:
                     changes.append(IndentToken(UNINDENT, self.lineno, ' ' * indents.pop()))
