@@ -5,7 +5,7 @@ from jinja2 import  Environment, TemplateSyntaxError
 from jinja2.ext import Extension
 # Project imports.
 from lexer import Lexer
-from parser import Parser
+from parse import Parser
 
 class SlimishExtension(Extension):
     """

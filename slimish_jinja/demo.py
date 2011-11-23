@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys, os
 from lexer import Lexer
-from parser import Parser
+from parse import Parser
 
 cur_dir = os.path.dirname(os.path.realpath(__file__))
 demo_template = os.path.join(cur_dir, 'demo.slim')
