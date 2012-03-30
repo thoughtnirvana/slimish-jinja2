@@ -1,6 +1,5 @@
 from flask import Flask
 from flask import render_template
-from werkzeug import ImmutableDict
 from slimish_jinja import SlimishExtension
 
 
