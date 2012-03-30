@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-import sys, os
-from lexer import Lexer
-from parse import Parser
+import sys
+from slimish_jinja import Lexer, Parser
 
 with open(sys.argv[1]) as template:
     lexer = Lexer(template)
