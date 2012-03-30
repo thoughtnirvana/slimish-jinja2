@@ -1,11 +1,10 @@
-import os.path, sys
+import os.path
 from cStringIO import StringIO
 # Jinja imports.
-from jinja2 import  Environment, TemplateSyntaxError
 from jinja2.ext import Extension
 # Project imports.
-from lexer import Lexer
-from parse import Parser
+from .lexer import Lexer
+from .parse import Parser
 
 class SlimishExtension(Extension):
     """
