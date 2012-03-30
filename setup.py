@@ -209,7 +209,7 @@ converts to::
 
 from setuptools import setup
 setup(name='slimish_jinja',
-      version='0.1',
+      version='0.2',
       packages=['slimish_jinja'],
       scripts=['slim_to_jinja.py'],
       isntall_requires=['distribute', 'jinja2'],
@@ -217,6 +217,6 @@ setup(name='slimish_jinja',
       description='Slim templates syntax for Jinja2 templates',
       long_description=long_doc,
       author='Rahul Kumar',
-      url='https://github.com/thoughtnirvana/slimish_jinja',
+      url='https://github.com/thoughtnirvana/slimish-jinja2',
       author_email='rahul@thoughtnirvana.com',
      )
