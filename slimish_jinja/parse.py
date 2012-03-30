@@ -1,5 +1,5 @@
 import sys
-from tokens import *
+from .tokens import *
 
 class Parser(object):
     """
