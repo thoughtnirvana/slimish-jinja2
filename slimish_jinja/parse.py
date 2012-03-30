@@ -1,4 +1,4 @@
-import sys, re
+import sys
 from tokens import *
 
 class Parser(object):
@@ -15,15 +15,16 @@ class Parser(object):
         Entry point for parsing the template.
         The template consists of html and jinja tags.
         Grammar::
-            doc -> doctype? (html_tag | jinja_tag)+
+            template -> doctype? doc
+            doc -> (html_tag | jinja_tag | text_tag)*
             text_tag -> {print}
             html_tag -> (HTML_NC_TAG {print}
                         |HTML_TAG {print}
-                        |HTML_OPEN_TAG {print} INDENT (doc)* UNINDENT HTML_CLOSE_TAG {print}
+                        |HTML_OPEN_TAG {print} INDENT doc UNINDENT HTML_CLOSE_TAG {print}
                         )+
             jinja_tag -> (JINJA_NC_TAG {print}
                          |JINJA_TAG {print}
-                         |jinja_open_tag {print} INDENT (doc)* UNINDENT jinja_close_tag {print}
+                         |JINJA_OPEN_TAG {print} INDENT doc UNINDENT JINJA_CLOSE_TAG {print}
                          )+
         """
         it = self.it
@@ -43,7 +44,7 @@ class Parser(object):
         Jinja template non-terminal.
         Contains 0 or more html/jinja tags.
         Production::
-            doc -> (html_tag | jinja_tag)*
+            doc -> (html_tag | jinja_tag | text_tag)*
         """
         while True:
             if isinstance(self.lookahead, HtmlToken):
@@ -60,7 +61,7 @@ class Parser(object):
         Production::
             html_tag -> (HTML_NC_TAG {print}
                         |HTML_TAG {print}
-                        |HTML_OPEN_TAG {print} INDENT (doc)* UNINDENT HTML_CLOSE_TAG {print}
+                        |HTML_OPEN_TAG {print} INDENT doc UNINDENT HTML_CLOSE_TAG {print}
                         )+
         """
         callback = self.callback
@@ -86,7 +87,7 @@ class Parser(object):
         Production::
             jinja_tag -> (JINJA_NC_TAG {print}
                          |JINJA_TAG {print}
-                         |jinja_open_tag {print} INDENT (doc)* UNINDENT jinja_close_tag {print}
+                         |jinja_open_tag {print} INDENT doc UNINDENT jinja_close_tag {print}
                          )+
         """
         callback = self.callback
@@ -116,7 +117,7 @@ class Parser(object):
         """
         Parses jinja for tag.
         Production::
-            for_tag -> for (doc)+ (else (doc)+)?
+            for_tag -> for doc (else doc)?
         """
         self.match(lookahead)
         self.more_content()
@@ -130,7 +131,7 @@ class Parser(object):
         """
         Parses jinja if tag.
         Production::
-            if_tag -> if (doc)+ (elif (doc)+)* (else (doc)+)?
+            if_tag -> if doc (elif doc)* (else doc)?
         """
         self.match(lookahead)
         self.more_content()
