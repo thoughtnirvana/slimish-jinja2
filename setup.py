@@ -209,10 +209,10 @@ converts to::
 
 from setuptools import setup
 setup(name='slimish_jinja',
-      version='0.2',
+      version='0.3',
       packages=['slimish_jinja'],
       scripts=['slim_to_jinja.py'],
-      isntall_requires=['distribute', 'jinja2'],
+      install_requires=['distribute', 'jinja2'],
       license='BSD',
       description='Slim templates syntax for Jinja2 templates',
       long_description=long_doc,
