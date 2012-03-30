@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys, os
+import os
 from lexer import Lexer
 from parse import Parser
 
