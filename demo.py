@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import os
-from lexer import Lexer
-from parse import Parser
+from slimish_jinja import Lexer, Parser
 
 cur_dir = os.path.dirname(os.path.realpath(__file__))
 demo_template = os.path.join(cur_dir, 'demo.slim')
