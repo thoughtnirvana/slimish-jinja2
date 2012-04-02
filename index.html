@@ -1,0 +1,252 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Slimish-jinja2 by thoughtnirvana</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/thoughtnirvana/slimish-jinja2">Fork On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/thoughtnirvana/slimish-jinja2/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/thoughtnirvana/slimish-jinja2/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>Slimish-jinja2</h1>
+          <p>Jinja2 extension for slim like syntax.</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/thoughtnirvana">thoughtnirvana</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/mattgraham">mattgraham</a></span>
+        </div>
+
+        <h2>
+<a href="http://slim-lang.com/">Slim</a> templates syntax for Jinja2.</h2>
+
+<h4>Installation</h4>
+
+<pre><code>pip install slimish_jinja
+</code></pre>
+
+<p>If you want to use it for any other purpose, the <code>lexer - lexer.py</code> and <code>parser - parser.py</code> are simple enough.
+<code>lexer</code> reads the input by lines and generates tokens. <code>parser</code> implements a hand rolled recursive descent parser.</p>
+
+<p>For quick reference, this slim::</p>
+
+<pre><code>!5
+html
+  head
+    / Inline static content.
+    title
+    -block title
+       |Slimish-Jinja Example
+    / Self closing tag with attributes.
+    meta name="keywords" content="template language"
+    script
+      / Empty jinja tag.
+      @block script
+
+  / 'id' and 'class' shortcut.
+  body#home.fluid.liquid
+    / Nested static content.
+    h1
+      |This is my header.
+    / 'div' with 'id' and 'class' shortcut.
+    #contents.main
+      / Empty html tag.
+      %div
+      p Dynamic =content
+      p
+        |Nested dyanmic =content
+                Left indent is preserved in text blocks.
+      / Mixing html is fine as well.
+      p
+        |&lt;a href\="<a href="http://www.thoughtnirvana.com&quot;&gt;ThoughtNirvana&lt;/a">http://www.thoughtnirvana.com"&gt;ThoughtNirvana&lt;/a</a>&gt;
+      / Dynamic attributes.
+      ul class="=user_class"
+        / Jinja tag.
+        -for user in users
+          li =user.name
+          -if user.last_name
+            li =user.last_name
+          -elif user.middle_name
+            li =user.middle_name
+        -else
+          li No user found.
+</code></pre>
+
+<p>converts to::</p>
+
+<pre><code>&lt;!doctype html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;
+    {% block title %}
+        Slimish-Jinja Example
+    {% endblock %}
+    &lt;/title&gt;
+    &lt;meta  content="template language" name="keywords"/&gt;
+    &lt;script&gt;
+    {% block script %}{% endblock %}
+    &lt;/script&gt;
+&lt;/head&gt;
+&lt;body id="home" class="fluid liquid"&gt;
+    &lt;h1&gt;
+    This is my header.
+    &lt;/h1&gt;
+    &lt;div id="contents" class="main"&gt;
+    &lt;div&gt;&lt;/div&gt;
+    &lt;p&gt;Dynamic {{ content }}&lt;/p&gt;
+    &lt;p&gt;
+        Nested dyanmic {{ content }}        Left indent is preserved in text blocks.
+    &lt;/p&gt;
+    &lt;p&gt;
+        &lt;a href="<a href="http://www.thoughtnirvana.com&quot;&gt;ThoughtNirvana&lt;/a">http://www.thoughtnirvana.com"&gt;ThoughtNirvana&lt;/a</a>&gt;
+    &lt;/p&gt;
+    &lt;/div&gt;
+    &lt;ul  class="{{ user_class }}"&gt;
+    {% for user in users %}
+        &lt;li&gt;{{ user.name }}&lt;/li&gt;
+        {% if user.last_name %}
+        &lt;li&gt;{{ user.last_name }}&lt;/li&gt;
+        {% elif user.middle_name %}
+        &lt;li&gt;{{ user.middle_name }}&lt;/li&gt;
+        {% endif %}
+    {% else %}
+        &lt;li&gt;No user found.&lt;/li&gt;
+    {% endfor %}
+    &lt;/ul&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<h4>Doctype delcarations.</h4>
+
+<pre><code>!html      
+&lt;!DOCTYPE html&gt;
+
+!5         
+&lt;!DOCTYPE html&gt;
+
+!1.1       
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "<a href="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd</a>"&gt;
+
+!strict
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "<a href="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd</a>"&gt;
+
+!frameset
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "<a href="http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd</a>"&gt;
+
+!mobile
+&lt;!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.2//EN" "<a href="http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd">http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd</a>"&gt;
+
+!basic
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML Basic 1.1//EN" "<a href="http://www.w3.org/TR/xhtml-basic/xhtml-basic11.dtd">http://www.w3.org/TR/xhtml-basic/xhtml-basic11.dtd</a>"&gt;
+
+!transitional
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "<a href="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd</a>"&gt;
+
+
+!strict
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "<a href="http://www.w3.org/TR/html4/strict.dtd">http://www.w3.org/TR/html4/strict.dtd</a>"&gt;
+
+!frameset
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "<a href="http://www.w3.org/TR/html4/frameset.dtd">http://www.w3.org/TR/html4/frameset.dtd</a>"&gt;
+
+!transitional
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "<a href="http://www.w3.org/TR/html4/loose.dtd">http://www.w3.org/TR/html4/loose.dtd</a>"&gt;
+</code></pre>
+
+<h4>Static content</h4>
+
+<pre><code>/ Inline static content.
+h1 This is my header
+
+/ Nested static content.
+h1
+  |This is my header
+
+/ Multiline static content.
+p
+  |Span mutliple lines.
+     Left indent preserved in the output.
+</code></pre>
+
+<h4>Dynamic content</h4>
+
+<pre><code>/ Inline
+h1 =user.title
+
+/ Nested
+h1
+  =user.title
+
+/ Mixed with text.
+h1
+  |The user name is =user.name
+</code></pre>
+
+<h4>Jinja tags</h4>
+
+<pre><code>-for user in users
+  li user.name
+  -if user.lastname
+    li user.lastname
+-else
+  li No users found
+</code></pre>
+
+<h4>Dynamic contents in attribute</h4>
+
+<pre><code>  a href=user.url =user.name  
+</code></pre>
+
+<h4>
+<strong>id</strong> and <strong>classname</strong> shortcuts</h4>
+
+<pre><code>#contents.main.liquid =&gt; &lt;div id="contents" class="main liquid"&gt;
+
+body#home.left =&gt; &lt;body id="home" class="left"&gt;
+</code></pre>
+
+<h4>Code comments.</h4>
+
+<pre><code>/ Single slash comments.
+/ Not part of the output.
+p This is content.
+</code></pre>
+
+<h4>Empty html tags</h4>
+
+<pre><code>%div =&gt; &lt;div&gt;&lt;/div&gt;
+</code></pre>
+
+<h4>Empty jinja tags.</h4>
+
+<pre><code>@block title =&gt; {%block title %}{% endblock %}
+</code></pre>
+      </section>
+
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
+  </body>
+</html>
