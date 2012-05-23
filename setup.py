@@ -4,8 +4,9 @@ long_doc = """
 
 #### Installation
 
-I will be uploading it to PyPi soon. By then, clone the repository. Examples of using it as `Jinja2
-extension(jinja_demo.py)`,
+    pip install slimish_jinja
+
+Examples of using it as `Jinja2 extension(jinja_demo.py)`,
 with `Flask(flask_demo.py)` and standalone`(convert.py and demo.py)` are bundled.
 
 If you want to use it for any other purpose, the `lexer - lexer.py` and `parser - parser.py` are simple enough.
@@ -209,7 +210,7 @@ converts to::
 
 from setuptools import setup
 setup(name='slimish_jinja',
-      version='0.3',
+      version='0.4',
       packages=['slimish_jinja'],
       scripts=['slim_to_jinja.py'],
       install_requires=['distribute', 'jinja2'],
