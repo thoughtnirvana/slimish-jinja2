@@ -63,22 +63,23 @@ class Lexer(object):
         Checks for increase or decrease in indent.
         yields `IndentToken` if index changes.
         """
-        indent = self.whitespace.match(line)
-        if indent:
-            indent = indent.group()
-            indent_len = len(indent)
-            indents = self.indents
-            # Record indents.
-            if not indents or indent_len > indents[-1]:
-                # Indents are part of text if in text block.
-                if not self.in_text_block:
-                    indents.append(indent_len)
-                    return INDENT, [IndentToken(INDENT, self.lineno, indent)]
-            elif indent_len < indents[-1]:
-                changes = []
-                while indents and indents[-1] > indent_len:
-                    changes.append(IndentToken(UNINDENT, self.lineno, ' ' * indents.pop()))
-                return UNINDENT, changes
+        current_indent = self.whitespace.match(line)
+        indent_len = 0
+        if current_indent:
+            current_indent = current_indent.group()
+            indent_len = len(current_indent)
+        indents = self.indents
+        # Record indents.
+        if (not indents and current_indent) or (indents and indent_len > indents[-1]):
+            # Indents are part of text if in text block.
+            if not self.in_text_block:
+                indents.append(indent_len)
+                return INDENT, [IndentToken(INDENT, self.lineno, current_indent)]
+        elif indents and indent_len < indents[-1]:
+            changes = []
+            while indents and indents[-1] > indent_len:
+                changes.append(IndentToken(UNINDENT, self.lineno, ' ' * indents.pop()))
+            return UNINDENT, changes
         return False
 
     def extract_values(self, tag_name, line):
