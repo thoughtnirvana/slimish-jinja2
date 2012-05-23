@@ -132,10 +132,15 @@ class Lexer(object):
         """
         Handles jinja tags.
         """
-        tag_name = self.whitespace.split(line)[0][1:]
+        parts = self.whitespace.split(line)
+        if parts[0] == '-':
+            tag_name = parts[1]
+        else:
+            tag_name = parts[0][1:]
+        contents = line[1:].lstrip()
         if tag_name in JinjaToken.no_content_jinja_tags:
-            return JinjaToken(JINJA_NC_TAG, self.lineno, tag_name, line[1:])
-        return JinjaToken(JINJA_OPEN_TAG, self.lineno, tag_name, line[1:])
+            return JinjaToken(JINJA_NC_TAG, self.lineno, tag_name, contents)
+        return JinjaToken(JINJA_OPEN_TAG, self.lineno, tag_name, contents)
 
     def handle_empty_jinja(self, line):
         """
@@ -157,7 +162,8 @@ class Lexer(object):
         """
         Handles output statements
         """
-        return JinjaOutputToken(JINJA_OUTPUT_TAG, self.lineno, line[1:])
+        contents = line[1:].lstrip()
+        return JinjaOutputToken(JINJA_OUTPUT_TAG, self.lineno, contents)
 
     def handle_doctype(self, line):
         """
