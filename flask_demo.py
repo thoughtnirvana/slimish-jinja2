@@ -15,7 +15,7 @@ def hello_slim():
     users = [{'name': 'foo', 'last_name': 'bar'},
              {'name': 'bar', 'middle_name': 'baz'},
              {'name': 'baz'}]
-    return render_template('demo.slim', users=users)
+    return render_template('demo.slim', users=users, content='content', user_class='user_class')
 
 if __name__  == '__main__':
     app.run()

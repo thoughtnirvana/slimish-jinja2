@@ -14,4 +14,4 @@ with open(demo_template) as template:
     users = [{'name': 'foo', 'last_name': 'bar'},
              {'name': 'bar', 'middle_name': 'baz'},
              {'name': 'baz'}]
-    sys.stdout.write(jinja_tmpl.render(users=users))
+    sys.stdout.write(jinja_tmpl.render(users=users, content='content', user_class='user_class'))
