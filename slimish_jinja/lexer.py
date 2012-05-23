@@ -23,14 +23,12 @@ class Lexer(object):
         """
         Tokenizes `self.src` and yields `Token` objects..
         """
-        empty_file = True
         for line in self.src:
             self.lineno += 1
             # Ignore blank lines and comments.
             stripped_line = line.strip()
             if not stripped_line or (stripped_line and stripped_line[0] == '/'):
                 continue
-            empty_file = False
             # Check for indent changes.
             indent_change = self.check_indent(line)
             if indent_change:
@@ -51,15 +49,14 @@ class Lexer(object):
             handler = self.handlers.get(first_char, self.handle_html)
             ret = handler(stripped_line)
             if ret: yield ret
-        if not empty_file:
-            # yield implicity closed tags.
-            indents = self.indents
-            lineno = self.lineno
-            while indents:
-                yield IndentToken(UNINDENT, lineno, ' ' * indents.pop())
-                lineno += 1
-            # unindent for `html` for which no indent was recorded.
-            yield IndentToken(UNINDENT, lineno, '')
+        # yield implicity closed tags.
+        indents = self.indents
+        lineno = self.lineno
+        while indents:
+            yield IndentToken(UNINDENT, lineno, ' ' * indents.pop())
+            lineno += 1
+        # unindent for `html` for which no indent was recorded.
+        yield IndentToken(UNINDENT, lineno, '')
 
     def check_indent(self, line):
         """
