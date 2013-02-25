@@ -6,7 +6,7 @@ class Lexer(object):
     Tokenizes slim templates.
     """
 
-    key_val_pat = re.compile(r'\s+ (.+?) \s*=\s* (["\']) ([^\2]*?) \2', re.X)
+    key_val_pat = re.compile(r'\s+ ([^\s]+?) \s*=\s* (["\']) ([^\2]*?) \2', re.X)
     whitespace = re.compile(r'\s+')
 
     def __init__(self, src):
