@@ -72,7 +72,7 @@ class HtmlToken(Token):
         if token_type == HTML_TAG_CLOSE:
             return '</%s>' % self.tag_name
         elif token_type == HTML_NC_TAG:
-            return '<%s%s/>' % (self.full_tag_name, self.attribs)
+            return '<%s%s />' % (self.full_tag_name, self.attribs)
         elif token_type == HTML_TAG:
             return '<%s%s>%s</%s>' % (self.full_tag_name, self.attribs, self.contents, self.tag_name)
         elif token_type == HTML_TAG_OPEN:
