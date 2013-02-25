@@ -1,5 +1,5 @@
 import os.path
-from cStringIO import StringIO
+from StringIO import StringIO
 # Jinja imports.
 from jinja2.ext import Extension
 # Project imports.
