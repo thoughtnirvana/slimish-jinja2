@@ -158,6 +158,11 @@ def parse_text_contents(contents):
     return contents
 
 
+id_or_class = re.compile(r'[#.]')
+id_pat = re.compile(r'#([^#.]+)')
+class_pat = re.compile(r'\.([^#.]+)')
+tag_pat = re.compile(r'([^#.]+)')
+
 def parse_tag_name(tag_name):
     """
     Returns tag name with classname and id substituted.
@@ -167,12 +172,7 @@ def parse_tag_name(tag_name):
     #top => div id="top"
     .mid#top => div id="top" class="mid"
     """
-    id_or_class = re.compile(r'[#.]')
-    id_pat = re.compile(r'#([^#.]+)')
-    class_pat = re.compile(r'\.([^#.]+)')
-    tag_pat = re.compile(r'([^#.]+)')
     short_tag_name = tag_name
-
     if id_or_class.search(tag_name):
         if id_or_class.match(tag_name):
             short_tag_name = real_tag_name = 'div'
