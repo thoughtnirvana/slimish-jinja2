@@ -139,7 +139,7 @@ JINJA_OUTPUT_TAG = intern('jinja_output_tag')
 class JinjaOutputToken(Token):
     def __init__(self, token_type, lineno, contents):
         self.__dict__.update(token_type=token_type, lineno=lineno,
-                             contents=parse_text_contents(contents))
+                             contents=contents)
 
     def __str__(self):
         return '%s %s %s' % (env['variable_start_string'], self.contents,
