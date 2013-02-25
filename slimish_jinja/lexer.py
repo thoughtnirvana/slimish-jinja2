@@ -108,13 +108,18 @@ class Lexer(object):
         """
         tag_and_vals = self.whitespace.split(line)
         tag_name = tag_and_vals[0]
+        tag_name_without_class_and_id = tag_name.split('#')[0].split('.')[0]
+
         if len(tag_and_vals) == 1:
-            return HtmlToken(HTML_TAG_OPEN, self.lineno, tag_name)
+            if tag_name_without_class_and_id in HtmlToken.no_content_html_tags:
+                return HtmlToken(HTML_NC_TAG, self.lineno, tag_name)
+            else:
+                return HtmlToken(HTML_TAG_OPEN, self.lineno, tag_name)
         # Get the attributes for the tag.
         attrs, contents = self.extract_values(tag_name, line)
         if contents:
             return HtmlToken(HTML_TAG, self.lineno, tag_name, attrs, contents)
-        elif tag_name in HtmlToken.no_content_html_tags:
+        elif tag_name_without_class_and_id in HtmlToken.no_content_html_tags:
             return HtmlToken(HTML_NC_TAG, self.lineno, tag_name, attrs)
         else:
             return HtmlToken(HTML_TAG_OPEN, self.lineno, tag_name, attrs)
