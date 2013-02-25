@@ -37,7 +37,7 @@ class DoctypeToken(Token):
     def __str__(self):
         try:
             return self.doctypes[self.dtd]
-        except KeyError, ex:
+        except KeyError:
             raise SyntaxError("Invalid doctype at line %d: %s" % (self.lineno, self.original_dtd))
 
 
