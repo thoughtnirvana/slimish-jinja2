@@ -20,20 +20,20 @@ html
     #contents.main
       / Empty html tag.
       %div
-      p Dynamic = content
+      p Dynamic {{ content }}
       p
-        |Nested dynamic = content
-                Left indent is preserved in text blocks.
+        |Nested dynamic {{ content }}
+             Left indent is preserved in text blocks.
       p
-        |Mixing <a href\="http://en.wikipedia.org/wiki/HTML">html</a> is fine as well.
+        |Mixing <a href="http://en.wikipedia.org/wiki/HTML">html</a> is fine as well.
     / Dynamic attributes.
-    ul class="=user_class"
+    ul class="{{ user_class }}"
       / Jinja tag.
       - for user in users
-        li = user.name
+        li {{ user.name }}
         - if user.last_name
-          li = user.last_name
+          li {{ user.last_name }}
         - elif user.middle_name
-          li = user.middle_name
+          li {{ user.middle_name }}
       - else
         li No user found.

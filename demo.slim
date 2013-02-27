@@ -8,7 +8,7 @@ html
     / Self closing tag with attributes.
     meta name="keywords" content="template language"
     - assets filters='jsmin', output='gen/packed.js', 'common/jquery.js', 'site/base.js' 
-      %script type="text/javascript" src="=ASSET_URL"
+      %script type="text/javascript" src="{{ ASSET_URL }}"
     script
       / Empty jinja tag.
       @block script
@@ -22,20 +22,20 @@ html
     #contents.main
       / Empty html tag.
       %div
-      p Dynamic = content
+      p Dynamic {{ content }}
       p
-        |Nested dyanmic = content
-                Left indent is preserved in text blocks.
+        |Nested dyanmic  {{ content }}
+        Left indent is preserved in text blocks.
       p
-        |<a href\="http://www.google.com">Google</a>
+        |<a href="http://www.google.com">Google</a>
     / Dynamic attributes.
-    ul class="=user_class"
+    ul class="{{ user_class }}"
       / Jinja tag.
       - for user in users
-        li = user.name
+        li {{ user.name }}
         - if user.last_name
-          li = user.last_name
+          li {{ user.last_name }}
         - elif user.middle_name
-          li = user.middle_name
+          li {{ user.middle_name }}
       - else
         li No user found.
