@@ -12,9 +12,9 @@ app.debug = True
 
 @app.route('/')
 def hello_slim():
-    users = [{'name': 'foo', 'last_name': 'bar'},
-             {'name': 'bar', 'middle_name': 'baz'},
-             {'name': 'baz'}]
+    users = [{'name': 'first1', 'last_name': 'last1'},
+             {'name': 'first2', 'middle_name': 'middle2'},
+             {'name': 'first3'}]
     return render_template('demo.slim', users=users, content='content', user_class='user_class')
 
 if __name__  == '__main__':
