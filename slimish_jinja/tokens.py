@@ -134,6 +134,19 @@ class JinjaToken(Token):
             return '%s %s %s' % (env['block_start_string'], 'end%s' % self.tag_name,
                                 env['block_end_string'])
 
+
+JINJA_OUTPUT_TAG = intern('jinja_output_tag')
+
+class JinjaOutputToken(Token):
+    def __init__(self, token_type, lineno, contents):
+        self.__dict__.update(token_type=token_type, lineno=lineno,
+                             contents=contents)
+
+    def __str__(self):
+        contents = self.contents.lstrip('{').rstrip('}').strip()
+        return '%s %s %s' % (env['variable_start_string'], contents,
+                             env['variable_end_string'])
+
 id_or_class = re.compile(r'[#.]')
 id_pat = re.compile(r'#([^#.]+)')
 class_pat = re.compile(r'\.([^#.]+)')

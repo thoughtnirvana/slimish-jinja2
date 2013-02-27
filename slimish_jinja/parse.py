@@ -51,7 +51,7 @@ class Parser(object):
                 self.html_tag()
             elif isinstance(self.lookahead, JinjaToken):
                 self.jinja_tag()
-            elif isinstance(self.lookahead, TextToken):
+            elif isinstance(self.lookahead, TextToken) or isinstance(self.lookahead, JinjaOutputToken):
                 self.output_tag(self.lookahead)
             else:
                 return
@@ -92,7 +92,7 @@ class Parser(object):
         """
         callback = self.callback
         while True:
-            if self.lookahead.token_type in (JINJA_TAG, JINJA_NC_TAG):
+            if self.lookahead.token_type in (JINJA_TAG, JINJA_OUTPUT_TAG, JINJA_NC_TAG):
                 # Output contents and look for next tag.
                 callback(self.format_output(self.lookahead))
                 self.match(self.lookahead)

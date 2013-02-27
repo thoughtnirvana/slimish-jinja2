@@ -13,6 +13,7 @@ class Lexer(object):
         self.__dict__.update(src=src, indents=[], in_text_block=False,
                              buf=[], lineno=0)
         self.handlers = {'-': self.handle_jinja,
+                         '{': self.handle_jinja_output,
                          '|': self.handle_text,
                          '%': self.handle_empty_html,
                          '@': self.handle_empty_jinja,
@@ -156,6 +157,13 @@ class Lexer(object):
         """
         self.in_text_block = True
         self.buf.append(line[1:])
+
+    def handle_jinja_output(self, line):
+        """
+        Handles output statements
+        """
+        contents = line.lstrip()
+        return JinjaOutputToken(JINJA_OUTPUT_TAG, self.lineno, contents)
 
     def handle_doctype(self, line):
         """
