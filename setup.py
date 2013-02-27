@@ -1,7 +1,6 @@
 long_doc = """
 ## [Slim](http://slim-lang.com/) templates syntax for Jinja2.
 
-
 #### Installation
 
     pip install slimish_jinja
@@ -16,45 +15,45 @@ For quick reference, this slim::
 
     !5
     html
-      head
+    head
         / Inline static content.
         title
-        -block title
-           |Slimish-Jinja Example
+        - block title
+            |Slimish-Jinja Example
         / Self closing tag with attributes.
         meta name="keywords" content="template language"
+        - assets filters='jsmin', output='gen/packed.js', 'common/jquery.js', 'site/base.js'
+        %script type="text/javascript" src="{{ ASSET_URL }}"
         script
-          / Empty jinja tag.
-          @block script
+        / Empty jinja tag.
+        @block script
 
-      / 'id' and 'class' shortcut.
-      body#home.fluid.liquid
+    / 'id' and 'class' shortcut.
+    body#home.fluid.liquid
         / Nested static content.
         h1
-          |This is my header.
+        |This is my header.
         / 'div' with 'id' and 'class' shortcut.
         #contents.main
-          / Empty html tag.
-          %div
-          p Dynamic =content
-          p
-            |Nested dyanmic =content
-                    Left indent is preserved in text blocks.
-          / Mixing html is fine as well.
-          p
-            |<a href\="http://www.thoughtnirvana.com">ThoughtNirvana</a>
-          / Dynamic attributes.
-          ul class="=user_class"
-            / Jinja tag.
-            -for user in users
-              li =user.name
-              -if user.last_name
-                li =user.last_name
-              -elif user.middle_name
-                li =user.middle_name
-            -else
-              li No user found.
-
+        / Empty html tag.
+        %div
+        p Dynamic {{ content }}
+        p
+            |Nested dyanmic  {{ content }}
+            Left indent is preserved in text blocks.
+        p
+            |<a href="http://www.google.com">Google</a>
+        / Dynamic attributes.
+        ul class="{{ user_class }}"
+        / Jinja tag.
+        - for user in users
+            li {{ user.name }}
+            - if user.last_name
+            li {{ user.last_name }}
+            - elif user.middle_name
+            li {{ user.middle_name }}
+        - else
+            li No user found.
 
 converts to::
 
@@ -157,30 +156,30 @@ converts to::
 #### Dynamic content
 
     / Inline
-    h1 =user.title
+    h1 {{ user.title }}
 
     / Nested
     h1
-      =user.title
+      {{ user.title }}
 
     / Mixed with text.
     h1
-      |The user name is =user.name
+      |The user name is {{ user.name }}
 
 
 #### Jinja tags
 
-    -for user in users
-      li user.name
-      -if user.lastname
-        li user.lastname
-    -else
+    - for user in users
+      li {{ user.name }}
+      - if {{ user.lastname }}
+        li {{ user.lastname }}
+    - else
       li No users found
 
 
 #### Dynamic contents in attribute
 
-      a href=user.url =user.name
+      a href="{{ user.url  }}" {{ user.name }}
 
 
 #### **id** and **classname** shortcuts
@@ -206,11 +205,12 @@ converts to::
 
     @block title => {%block title %}{% endblock %}
 
+
 """
 
 from setuptools import setup
 setup(name='slimish_jinja',
-      version='0.8',
+      version='1.0',
       packages=['slimish_jinja'],
       scripts=['slim_to_jinja.py'],
       install_requires=['distribute', 'jinja2'],
