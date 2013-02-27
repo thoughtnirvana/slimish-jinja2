@@ -146,7 +146,7 @@ class JinjaOutputToken(Token):
                              env['variable_end_string'])
 
 
-dynamic_val = re.compile(r'''(?<!\\) (?<!\{\{) = \s* (
+dynamic_val = re.compile(r'''(?<![\\{%]) = \s* (
     (?: \w+ | \'.*?\' | \".*?\" | \{ [^\{].* \} | \(.*?\) | \[.*?\] )
         (?: ( \.\w+ | \'.*?\' | \".*?\" | \{ [^\{].*? \}| \(.*?\)| \[.*?\] |
         (if|else|or|is|in|and|not|==|!=|>|>=|<|<=|~|%) \w* | [|]\ {0,1}\w* ) ? )* )
