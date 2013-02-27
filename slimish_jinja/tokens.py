@@ -52,7 +52,8 @@ class HtmlToken(Token):
     HTML token.
     """
     no_content_html_tags = set(map(intern,
-                                   ['br', 'img', 'link', 'hr', 'meta', 'input']))
+                                   ['area', 'base', 'basefont', 'br', 'col', 'frame', 'hr',
+                                    'img', 'input', 'isindex', 'link', 'meta', 'param']))
 
     def __init__(self, token_type, lineno, tag_name,
                  attribs=None, contents=None):
@@ -61,11 +62,11 @@ class HtmlToken(Token):
         # Parse the attributes and the contents if any.
         if attribs:
             self.attribs = reduce(lambda prev, k: '%s %s="%s"' %
-                            (prev, k, parse_text_contents(attribs[k])), attribs, ' ')
+                            (prev, k, attribs[k]), attribs, ' ')
         else:
             self.attribs = ''
         if contents:
-            self.contents = parse_text_contents(contents[1:])
+            self.contents = contents
 
     def __str__(self):
         token_type = self.token_type
@@ -98,7 +99,7 @@ TEXT = intern('text')
 class TextToken(Token):
     def __init__(self, token_type, lineno, text):
         self.__dict__.update(token_type=token_type, lineno=lineno,
-                             text=parse_text_contents(text))
+                             text=text)
 
     def __str__(self):
         return self.text
@@ -132,36 +133,6 @@ class JinjaToken(Token):
         elif self.token_type == JINJA_CLOSE_TAG:
             return '%s %s %s' % (env['block_start_string'], 'end%s' % self.tag_name,
                                 env['block_end_string'])
-
-
-JINJA_OUTPUT_TAG = intern('jinja_output_tag')
-
-class JinjaOutputToken(Token):
-    def __init__(self, token_type, lineno, contents):
-        self.__dict__.update(token_type=token_type, lineno=lineno,
-                             contents=contents)
-
-    def __str__(self):
-        return '%s %s %s' % (env['variable_start_string'], self.contents,
-                             env['variable_end_string'])
-
-
-dynamic_val = re.compile(r'''(?<![\\{%]) = \s* (
-    (?: \w+ | \'.*?\' | \".*?\" | \{ [^\{].* \} | \(.*?\) | \[.*?\] )
-        (?: ( \.\w+ | \'.*?\' | \".*?\" | \{ [^\{].*? \}| \(.*?\)| \[.*?\] |
-        (if|else|or|is|in|and|not|==|!=|>|>=|<|<=|~|%) \w* | [|]\ {0,1}\w* ) ? )* )
-    (?! [^\{]* \}\} )''', re.X)
-escaped_val = re.compile(r'\\ \s* (=)', re.X)
-
-def parse_text_contents(contents):
-    """
-    Substitutes `=val` with `{{ val }}`.
-    """
-    contents = dynamic_val.sub(r'%s \1 %s' % (env['variable_start_string'],
-                                              env['variable_end_string']), contents)
-    contents = escaped_val.sub(r'\1', contents)
-    return contents
-
 
 id_or_class = re.compile(r'[#.]')
 id_pat = re.compile(r'#([^#.]+)')

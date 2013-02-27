@@ -13,7 +13,6 @@ class Lexer(object):
         self.__dict__.update(src=src, indents=[], in_text_block=False,
                              buf=[], lineno=0)
         self.handlers = {'-': self.handle_jinja,
-                         '=': self.handle_jinja_output,
                          '|': self.handle_text,
                          '%': self.handle_empty_html,
                          '@': self.handle_empty_jinja,
@@ -33,11 +32,10 @@ class Lexer(object):
             indent_change = self.check_indent(line)
             if indent_change:
                 change_type, indent_change = indent_change
-                if self.in_text_block:
-                    if change_type == UNINDENT:
-                        yield TextToken(TEXT, self.lineno, "\n".join(self.buf))
-                        self.in_text_block = False
-                        self.buf = []
+                if self.in_text_block and change_type == UNINDENT:
+                    yield TextToken(TEXT, self.lineno, '\n'.join(self.buf))
+                    self.in_text_block = False
+                    self.buf = []
                 for change in indent_change:
                     yield change
             # Keep reading text if we are in text block.
@@ -52,7 +50,7 @@ class Lexer(object):
 
         # yield pending text block.
         if self.buf:
-            yield TextToken(TEXT, self.lineno, "\n".join(self.buf))
+            yield TextToken(TEXT, self.lineno, '\n'.join(self.buf))
         # yield implicity closed tags.
         indents = self.indents
         lineno = self.lineno
@@ -99,7 +97,7 @@ class Lexer(object):
             attrs[m.group(1)] = m.group(3)
         if not m or m.end() < len(line) - 1:
             start_idx = m.end() if m else len(tag_name)
-            contents = line[start_idx:]
+            contents = line[start_idx + 1:]
         return attrs, contents
 
     def handle_html(self, line):
@@ -110,11 +108,6 @@ class Lexer(object):
         tag_name = tag_and_vals[0]
         tag_name_without_class_and_id = tag_name.split('#')[0].split('.')[0]
 
-        if len(tag_and_vals) == 1:
-            if tag_name_without_class_and_id in HtmlToken.no_content_html_tags:
-                return HtmlToken(HTML_NC_TAG, self.lineno, tag_name)
-            else:
-                return HtmlToken(HTML_TAG_OPEN, self.lineno, tag_name)
         # Get the attributes for the tag.
         attrs, contents = self.extract_values(tag_name, line)
         if contents:
@@ -163,14 +156,6 @@ class Lexer(object):
         """
         self.in_text_block = True
         self.buf.append(line[1:])
-
-
-    def handle_jinja_output(self, line):
-        """
-        Handles output statements
-        """
-        contents = line[1:].lstrip()
-        return JinjaOutputToken(JINJA_OUTPUT_TAG, self.lineno, contents)
 
     def handle_doctype(self, line):
         """

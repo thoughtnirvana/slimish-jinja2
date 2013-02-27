@@ -6,7 +6,7 @@ class Parser(object):
     Parses and translates slim syntax to jinja2 syntax.
     """
     def __init__(self, lexer, debug=False, callback=sys.stdout.write):
-        self.__dict__.update(lexer=lexer, callback=callback, debug=debug,
+        self.__dict__.update(lexer=lexer,  debug=debug, callback=callback,
                              indents=[], lookahead=None)
         self.it = lexer()
 
@@ -36,7 +36,7 @@ class Parser(object):
             # Check for empty file.
             if self.lookahead:
                 self.doc()
-        except StopIteration, ex:
+        except StopIteration:
             pass
 
     def doc(self):
@@ -51,7 +51,7 @@ class Parser(object):
                 self.html_tag()
             elif isinstance(self.lookahead, JinjaToken):
                 self.jinja_tag()
-            elif isinstance(self.lookahead, TextToken) or isinstance(self.lookahead, JinjaOutputToken):
+            elif isinstance(self.lookahead, TextToken):
                 self.output_tag(self.lookahead)
             else:
                 return
@@ -92,7 +92,7 @@ class Parser(object):
         """
         callback = self.callback
         while True:
-            if self.lookahead.token_type in (JINJA_TAG, JINJA_OUTPUT_TAG, JINJA_NC_TAG):
+            if self.lookahead.token_type in (JINJA_TAG, JINJA_NC_TAG):
                 # Output contents and look for next tag.
                 callback(self.format_output(self.lookahead))
                 self.match(self.lookahead)
