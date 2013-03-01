@@ -1,5 +1,8 @@
 ## [Slim](http://slim-lang.com/) templates syntax for Jinja2. 
 
+This release breaks compatibility. Parsing = for Jinja Output is complex. I dropped it in favor of directly using `{{ jinja_output }}`.
+
+This release(1.0) onwards, the backward syntax compatibility will be maintained.
 
 #### Installation
 
