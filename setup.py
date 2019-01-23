@@ -22,7 +22,6 @@ For quick reference, this slim::
             |Slimish-Jinja Example
         / Self closing tag with attributes.
         meta name="keywords" content="template language"
-        - assets filters='jsmin', output='gen/packed.js', 'common/jquery.js', 'site/base.js'
         %script type="text/javascript" src="{{ ASSET_URL }}"
         script
         / Empty jinja tag.
@@ -210,10 +209,10 @@ converts to::
 
 from setuptools import setup
 setup(name='slimish_jinja',
-      version='1.0.1',
+      version='1.1.0',
       packages=['slimish_jinja'],
       scripts=['slim_to_jinja.py'],
-      install_requires=['distribute', 'jinja2'],
+      install_requires=['jinja2'],
       license='BSD',
       description='Slim templates syntax for Jinja2 templates',
       long_description=long_doc,

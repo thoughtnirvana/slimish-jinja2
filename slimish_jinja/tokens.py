@@ -1,4 +1,8 @@
+from builtins import map
+from builtins import object
 import re
+import sys
+from functools import reduce
 
 # Default Jinja environment.
 env = {'block_start_string': '{%', 'block_end_string': '%}',
@@ -13,7 +17,7 @@ class Token(object):
     pass
 
 
-DOCTYPE = intern('doctype')
+DOCTYPE = sys.intern('doctype')
 class DoctypeToken(Token):
     doctypes = {'html': '<!doctype html>',
                 '5': '<!doctype html>',
@@ -42,16 +46,16 @@ class DoctypeToken(Token):
 
 
 # HTML token types.
-HTML_TAG = intern('html_tag')
-HTML_NC_TAG = intern('html_nc_tag')
-HTML_TAG_OPEN = intern('html_tag_open')
-HTML_TAG_CLOSE = intern('html_tag_close')
+HTML_TAG = sys.intern('html_tag')
+HTML_NC_TAG = sys.intern('html_nc_tag')
+HTML_TAG_OPEN = sys.intern('html_tag_open')
+HTML_TAG_CLOSE = sys.intern('html_tag_close')
 
 class HtmlToken(Token):
     """
     HTML token.
     """
-    no_content_html_tags = set(map(intern,
+    no_content_html_tags = set(map(sys.intern,
                                    ['area', 'base', 'basefont', 'br', 'col', 'frame', 'hr',
                                     'img', 'input', 'isindex', 'link', 'meta', 'param']))
 
@@ -82,8 +86,8 @@ class HtmlToken(Token):
 
 
 # Indent token types.
-UNINDENT = intern('unindent')
-INDENT = intern('indent')
+UNINDENT = sys.intern('unindent')
+INDENT = sys.intern('indent')
 
 class IndentToken(Token):
     def __init__(self, token_type, lineno, spacer):
@@ -94,7 +98,7 @@ class IndentToken(Token):
         return self.spacer
 
 
-TEXT = intern('text')
+TEXT = sys.intern('text')
 
 class TextToken(Token):
     def __init__(self, token_type, lineno, text):
@@ -105,13 +109,13 @@ class TextToken(Token):
         return self.text
 
 
-JINJA_TAG = intern('jinja_tag')
-JINJA_OPEN_TAG = intern('jinja_open_tag')
-JINJA_CLOSE_TAG = intern('jinja_close_tag')
-JINJA_NC_TAG = intern('jinja_nc_tag')
+JINJA_TAG = sys.intern('jinja_tag')
+JINJA_OPEN_TAG = sys.intern('jinja_open_tag')
+JINJA_CLOSE_TAG = sys.intern('jinja_close_tag')
+JINJA_NC_TAG = sys.intern('jinja_nc_tag')
 
 class JinjaToken(Token):
-    no_content_jinja_tags = set(map(intern,
+    no_content_jinja_tags = set(map(sys.intern,
                                     ['include', 'extends', 'import', 'set',
                                      'from', 'do', 'break', 'continue',
                                     ]))
@@ -135,7 +139,7 @@ class JinjaToken(Token):
                                 env['block_end_string'])
 
 
-JINJA_OUTPUT_TAG = intern('jinja_output_tag')
+JINJA_OUTPUT_TAG = sys.intern('jinja_output_tag')
 
 class JinjaOutputToken(Token):
     def __init__(self, token_type, lineno, contents):

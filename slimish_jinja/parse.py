@@ -1,3 +1,4 @@
+from builtins import object
 import sys
 from .tokens import *
 
@@ -29,7 +30,7 @@ class Parser(object):
         """
         it = self.it
         try:
-            self.lookahead = it.next()
+            self.lookahead = next(it)
             if isinstance(self.lookahead, DoctypeToken):
                 self.callback(self.format_output(self.lookahead))
                 self.match(self.lookahead)
@@ -192,7 +193,7 @@ class Parser(object):
         `lookahead`.
         """
         if self.lookahead == lookahead:
-            self.lookahead = self.it.next()
+            self.lookahead = next(self.it)
         else:
             raise SyntaxError("Parser error: expected %s at line %d" (self.lookahead, self.lookahead.lineno))
 

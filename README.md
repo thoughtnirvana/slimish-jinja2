@@ -25,7 +25,6 @@ For quick reference, this slim::
             |Slimish-Jinja Example
         / Self closing tag with attributes.
         meta name="keywords" content="template language"
-        - assets filters='jsmin', output='gen/packed.js', 'common/jquery.js', 'site/base.js' 
         %script type="text/javascript" src="{{ ASSET_URL }}"
         script
         / Empty jinja tag.
