@@ -8,7 +8,7 @@ setuptools.setup(
     version='1.1.0',
     packages=['slimish_jinja'],
     scripts=['slim_to_jinja.py'],
-    install_requires=['jinja2'],
+    install_requires=['future', 'jinja2'],
     license='BSD',
     description='Slim templates syntax for Jinja2 templates',
     long_description=long_description,
