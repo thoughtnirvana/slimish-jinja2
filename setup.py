@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='slimish_jinja',
-    version='1.1.1',
+    version='1.1.2',
     packages=['slimish_jinja'],
     scripts=['slim_to_jinja.py'],
     install_requires=['future', 'jinja2'],
